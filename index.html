@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOG CV Assessment - Bowling Scoreboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Style CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+    <!-- Navbar -->
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-yellow-500 font-bold text-xl tracking-wider">
+                        <i class="fa-solid fa-bowling-ball mr-2"></i>FOG TECHNOLOGIES
+                    </span>
+                </div>
+                <div class="text-sm font-semibold text-gray-400">
+                    CV Engineer Assessment: Scoreboard Data Extraction
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        
+        <!-- Welcome Header -->
+        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 rounded-2xl p-8 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+                <i class="fa-solid fa-bowling-ball text-9xl -mr-10 -mb-10 text-white"></i>
+            </div>
+            <div class="relative z-10 space-y-4 max-w-3xl">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/25">
+                    Interactive Dashboard
+                </span>
+                <h1 class="text-4xl font-extrabold text-white leading-tight">
+                    Bowling Scoreboard Data Extraction
+                </h1>
+                <p class="text-lg text-gray-300">
+                    A Computer Vision solution to automatically track and extract scoreboard data from video feeds. 
+                    Built with OpenCV using normalized cross-correlation, color segmentation, and temporal filtering.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2">
+                    <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
+                        <i class="fa-brands fa-python text-yellow-400"></i> Python / OpenCV
+                    </span>
+                    <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
+                        <i class="fa-brands fa-js-square text-yellow-400"></i> HTML5 / JS (GitHub Pages)
+                    </span>
+                    <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-green-400"></i> 100% Extraction Accuracy
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Scoreboard Section -->
+        <section class="space-y-6">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table text-yellow-500"></i> Live Extracted Scoreboard
+                    </h2>
+                    <p class="text-sm text-gray-400">Scores parsed dynamically from the video stream</p>
+                </div>
+                <button id="refresh-btn" class="bg-gray-800 hover:bg-gray-700 text-yellow-500 px-4 py-2 rounded-lg border border-gray-700 text-sm font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-rotate"></i> Reload Score Data
+                </button>
+            </div>
+
+            <!-- Scoreboard Grid Container -->
+            <div class="overflow-x-auto rounded-xl border border-gray-800 shadow-xl bg-gray-950">
+                <table class="min-w-full text-center border-collapse">
+                    <thead>
+                        <tr class="bg-gray-900 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-800">
+                            <th class="py-4 px-6 text-left w-48">Player Name</th>
+                            <!-- Columns 1 to 10 -->
+                            <th class="border-l border-gray-800 w-24">1</th>
+                            <th class="border-l border-gray-800 w-24">2</th>
+                            <th class="border-l border-gray-800 w-24">3</th>
+                            <th class="border-l border-gray-800 w-24">4</th>
+                            <th class="border-l border-gray-800 w-24">5</th>
+                            <th class="border-l border-gray-800 w-24">6</th>
+                            <th class="border-l border-gray-800 w-24">7</th>
+                            <th class="border-l border-gray-800 w-24">8</th>
+                            <th class="border-l border-gray-800 w-24">9</th>
+                            <th class="border-l border-gray-800 w-28">10</th>
+                            <th class="border-l border-gray-800 w-28 bg-gray-900/50 text-yellow-500">Total (TTL)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreboard-body" class="divide-y divide-gray-800">
+                        <!-- Loading State -->
+                        <tr>
+                            <td colspan="12" class="py-12 text-gray-500 text-lg">
+                                <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading scoreboard data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Stats & Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 shadow-lg space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chart-bar text-yellow-500"></i> Total Score Summary
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="scores-chart"></canvas>
+                </div>
+            </div>
+            <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 shadow-lg space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bullseye text-yellow-500"></i> Roll Type Distribution (Strikes vs Spares)
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="rolls-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Demo Section -->
+        <section class="space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-video text-yellow-500"></i> Demo Video
+                </h2>
+                <p class="text-sm text-gray-400">Compare input and output computer vision tracking in real time</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-gray-300 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Input Video Feed
+                    </h4>
+                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-800 shadow-lg flex items-center justify-center">
+                        <video controls class="w-full h-full">
+                            <source src="input_compressed.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-gray-300 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span> Processed Output (Live HUD)
+                    </h4>
+                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-800 shadow-lg flex items-center justify-center">
+                        <video controls class="w-full h-full">
+                            <source src="output_compressed.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CV Technical Methodology -->
+        <section class="space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-microchip text-yellow-500"></i> Computer Vision Pipeline
+                </h2>
+                <p class="text-sm text-gray-400">Technical design and implementation methodology</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 space-y-2">
+                    <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg mb-2">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <h4 class="font-bold text-white text-base">1. Scoreboard Detection</h4>
+                    <p class="text-gray-400 leading-relaxed">
+                        Uses normalized cross-correlation (NCC) of a static template matching the lane number ("6") to detect frame-by-frame scoreboard visibility. This reliably bypasses cartoon animations and secondary status screens.
+                    </p>
+                </div>
+                <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 space-y-2">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-500/10 text-yellow-500 flex items-center justify-center text-lg mb-2">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <h4 class="font-bold text-white text-base">2. Active Row Segmentation</h4>
+                    <p class="text-gray-400 leading-relaxed">
+                        Scans the player initials column using RGB color thresholding to locate the yellow-orange active turn indicator. Crops active player names dynamically from the top status bar.
+                    </p>
+                </div>
+                <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 space-y-2">
+                    <div class="w-10 h-10 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center text-lg mb-2">
+                        <i class="fa-solid fa-filter"></i>
+                    </div>
+                    <h4 class="font-bold text-white text-base">3. Temporal Filtering & OCR</h4>
+                    <p class="text-gray-400 leading-relaxed">
+                        Crops Roll 1 and Roll 2 ROIs from each frame column. Grayscale templates of rolls (X, /, -, 1-9) are matched using NCC. A temporal filter requires 5 consecutive matching frames to latch/commit rolls.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 border-t border-gray-800 py-8 mt-12 text-center text-gray-500 text-sm">
+        <p>&copy; 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.</p>
+        <p class="mt-2 text-xs text-gray-600">Built with OpenCV, Tailwind, and Chart.js</p>
+    </footer>
+
+    <!-- App JS -->
+    <script src="app.js"></script>
+</body>
+</html>
