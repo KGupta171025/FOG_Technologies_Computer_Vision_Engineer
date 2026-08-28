@@ -1,97 +1,114 @@
-# FOG Technologies Computer Vision Scoreboard Data Extractor
+# FOG Scoreboard Data Extraction
 
-An automated, pixel-perfect Computer Vision pipeline to detect and extract player names, active turns, roll scores, and cumulative frames from a bowling scoreboard video feed.
+An automated, production-quality Computer Vision (CV) pipeline to detect and extract player names, active turns, roll scores, and cumulative frames from a bowling scoreboard video feed.
 
 This repository also contains a fully responsive, interactive web dashboard deployable to **GitHub Pages** to visualize the extracted game data and statistics in real-time.
 
 ---
 
-## 🌟 Features
-
-1. **Scoreboard Visibility Detection**: Bypasses full-screen transitions, pin-deck views, and cartoon animations using Normalized Cross-Correlation (NCC) template matching on the lane number indicator.
-2. **Active Player Turn Detection**: Identifies the highlighted active player row using HSV/RGB color segmentation.
-3. **Robust Character Recognition (OCR)**: Uses shift-invariant sliding template matching to decode rolls (`X`, `/`, `-`, `1`-`9`) across active (dark on yellow) and inactive (white on blue) rows.
-4. **Temporal Noise Filtering**: Requires character detections to be stable for 5 consecutive frames before committing, preventing single-frame transition glitches from polluting the data.
-5. **Mathematical Validation**: Automatically calculates cumulative frame scores and totals using standard bowling rules, guaranteeing 100% data integrity.
-6. **Live Interactive Dashboard**: A GitHub Pages ready static web app that displays scores, counts strikes and spares, and plots performance metrics using Chart.js.
-
----
-
-## 🛠️ Tech Stack
-
-- **Backend / CV Pipeline**: Python 3.14+, OpenCV (`opencv-python`), Numpy
-- **Web Dashboard**: HTML5, CSS3, JavaScript (Tailwind CSS, Chart.js, FontAwesome)
-- **Deployment**: GitHub Pages (fully static, zero-configuration)
-
----
-
-## 📦 Project Structure
+## 🌟 Solution Architecture
 
 ```
-├── templates/                 # Reference templates for OCR matching
-│   ├── template_lane.png      # Scoreboard lane indicator template
-│   ├── X.png, spare.png, ...  # Tightly cropped roll symbol templates
-├── config.py                  # Scoreboard pixel coordinate configurations
-├── scoreboard_detector.py     # Scoreboard visibility and active row detection
-├── extractor.py               # Slide-invariant character extraction
-├── utils.py                   # Score calculator and OpenCV frame drawer
-├── main.py                    # Main pipeline entry orchestrator
-├── index.html                 # GitHub Pages landing page
-├── style.css                  # Scoreboard specific styles
-├── app.js                     # Scoreboard dynamic renderer and Chart.js code
-├── scoreboard_data.json       # Live extracted JSON data output
-└── README.md                  # Project documentation (this file)
+                       [ Input Video Frame ]
+                                 │
+                                 ▼
+                     [ Scoreboard Visibility ]  ──(Hidden)──► [ Skip Frame ]
+                                 │
+                             (Visible)
+                                 ▼
+                    [ Active Row Segmentation ] ──► [ Invert Crop if Active ]
+                                 │
+                                 ▼
+                      [ Grayscale Binarization ]
+                                 │
+                                 ▼
+                    [ Size Heuristics Filter ]  ──► [ '-' Gutter & '1' Digit ]
+                                 │
+                           (Other Digits)
+                                 ▼
+                      [ Template Matching NCC ] ──► [ Strikes, Spares, 3-9 ]
+                                 │
+                                 ▼
+                   [ Temporal Majority Voting ] ──► [ Commits & Score Updates ]
+```
+
+---
+
+## 🛠️ Project Structure
+
+```
+├── config/
+│   └── config.yaml            # Pipeline parameters (RGB, NCC thresholds, crop offsets)
+├── src/
+│   └── scoreboard_extractor/  # Core package source
+│       ├── __init__.py
+│       ├── config.py          # Pydantic configuration loader
+│       ├── video_processor.py # Frame looping orchestrator
+│       ├── scoreboard_detector.py # Visibility and active player checks
+│       ├── image_preprocessor.py # Gray, threshold, resize, and crop tools
+│       ├── ocr_engine.py      # Custom Template Matching + EasyOCR fallback
+│       ├── data_parser.py     # Scores calculator and error normalizer
+│       ├── temporal_validator.py # Stable majority voter per scoreboard cell
+│       ├── annotator.py       # HUD overlay drawing functions
+│       └── models.py          # Frame record and scoreboard state models
+├── tests/                     # Automated unit testing suite
+│   ├── test_data_parser.py
+│   └── test_temporal_validator.py
+├── output/                    # Local CLI output files (CSV, JSON, MP4)
+├── docs/                      # Presentation and technical documentation
+│   ├── technical_report.md
+│   ├── demo_script.md
+│   └── submission_checklist.md
+├── index.html                 # Interactive Web Dashboard
+├── app.js                     # Dashboard script and Chart.js integration
+├── main.py                    # Command-line interface entry orchestrator
+├── pyproject.toml             # uv package dependencies
+└── README.md                  # This file
 ```
 
 ---
 
 ## 🚀 Setup & Installation
 
-### 1. Clone the Repository
+### 1. Synchronize Dependencies
+Ensure you have `uv` installed, then run the environment synchronizer:
 ```bash
-git clone https://github.com/KGupta171025/FOG_Technologies_Computer_Vision_Engineer.git
-cd FOG_Technologies_Computer_Vision_Engineer
+uv sync
 ```
+*This command automatically initializes a local `.venv` environment and installs all dependencies (`opencv-python`, `numpy`, `easyocr`, `pandas`, `pyyaml`, `pydantic`, `pytest`, `ruff`).*
 
-### 2. Install Python Dependencies
-Ensure you have Python 3.8+ installed, then install the required packages:
+### 2. Verify with Unit Tests
+Execute the unit testing suite:
 ```bash
-pip install opencv-python numpy
+uv run pytest
 ```
-
-### 3. Place Input Video
-Ensure the video file is named `bowling_scoreboard.mp4` and placed in the project root directory.
 
 ---
 
 ## 🏃 How to Run the Pipeline
 
-Run the main orchestrator script:
+Run the main orchestrator script using the command-line interface:
 ```bash
-python main.py
+uv run python main.py --input bowling_scoreboard.mp4 --frame-interval 5 --debug
 ```
 
-### Output Outputs:
-1. `output_demo.mp4`: A fully annotated video showing the scoreboard bounding boxes, lane tracking status, active player, and extracted rolls/frame scores overlaid in real-time.
-2. `scoreboard_data.json`: The final extracted scores saved as structured JSON.
+### Supported CLI Arguments:
+- `--input` (required): Path to the input video file (e.g. `bowling_scoreboard.mp4`).
+- `--output-dir` (optional): Path to the output directory (default: `output`).
+- `--frame-interval` (optional): Skip interval for frame processing (default: `5`).
+- `--confidence-threshold` (optional): OCR confidence filter (default: `0.60`).
+- `--debug` (optional): Enables saving preprocessed debug frames to `output/debug_frames/`.
 
 ---
 
-## 🌐 GitHub Pages Deployment
+## 🌐 GitHub Pages Dashboard Deployment
 
 The repository is built to work immediately on GitHub Pages!
 
-1. Commit and push all files to your GitHub repository:
-   ```bash
-   git add .
-   git commit -m "Implement CV pipeline and interactive web dashboard"
-   git push origin main
-   ```
-2. In your GitHub Repository:
-   - Go to **Settings** -> **Pages**.
-   - Under **Build and deployment**, select **Deploy from a branch**.
-   - Choose the `main` branch (root folder) and click **Save**.
-3. Your interactive scoreboard will be live at `https://<your-username>.github.io/FOG_Technologies_Computer_Vision_Engineer/`.
+1. Go to your repository settings on GitHub (**Settings** -> **Pages**).
+2. Under **Build and deployment**, select **Deploy from a branch**.
+3. Choose the `main` branch (root folder) and click **Save**.
+4. Your interactive scoreboard will be live at `https://<your-username>.github.io/FOG_Technologies_Computer_Vision_Engineer/`.
 
 > **Note on Local Execution:** Due to browser security restrictions (CORS), browsers block loading local JSON files via `fetch()` when opening `index.html` directly via `file://`. The webpage includes an automatic fallback that displays pre-populated mock data for demonstration if opened locally, along with instructions on running a quick local server:
 > ```bash
@@ -100,28 +117,8 @@ The repository is built to work immediately on GitHub Pages!
 
 ---
 
-## 📈 Extracted JSON Data Schema
-
-The extracted `scoreboard_data.json` format:
-```json
-{
-    "JAGDISH": {
-        "initial": "J",
-        "rolls": [
-            ["X", ""],
-            ["5", "-"],
-            ["-", "7"],
-            ["4", ""],
-            ["X", ""],
-            ["", ""],
-            ["", ""],
-            ["", ""],
-            ["", ""],
-            ["", "", ""]
-        ],
-        "scores": [15, 20, 27, 31, 41, "", "", "", "", ""],
-        "ttl": 41
-    },
-    ...
-}
-```
+## 🛡️ Preprocessing and Character Normalization
+- **Preprocess**: Each roll box is cropped relative to its column start using sub-pixel Y boundaries (`20:43`). The crop is grayscaled and thresholded at `150` to isolate symbols.
+- **Normalization**: The data parser translates common OCR errors depending on the slot context (e.g., converting `O` to `-` or `0` depending on the roll position).
+- **Assumptions**: The scoreboard remains stationary within the video frame and has a fixed layout.
+- **Known Limitations**: If the camera shifts heavily or the scoreboard layout is modified, the ROIs must be updated inside `config/config.yaml`.

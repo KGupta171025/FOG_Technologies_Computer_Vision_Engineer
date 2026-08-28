@@ -1,13 +1,11 @@
 # Large raw videos (tracked via compressed versions)
 bowling_scoreboard.mp4
 output_demo.mp4
+output/
 
 # Python caching
 __pycache__/
 *.pyc
+.venv/
+uv.lock
 
-# Local IDEs / System files
-.vscode/
-.idea/
-Thumbs.db
-.DS_Store

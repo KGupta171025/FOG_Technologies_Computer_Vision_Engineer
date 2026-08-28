@@ -1,0 +1,45 @@
+# Configuration for FOG Scoreboard Data Extraction Pipeline
+
+# Scoreboard detection and template matching settings
+scoreboard:
+  lane_template_roi: [30, 20, 105, 100]    # x_start, y_start, width, height for visibility NCC template
+  lane_ncc_threshold: 0.96                  # Threshold to consider scoreboard visible
+
+# Player row vertical coordinate ranges
+player_rows:
+  J: [130, 288]
+  V: [288, 446]
+  P: [446, 604]
+  T: [604, 762]
+
+# Player full name mappings
+player_names:
+  J: "JAGDISH"
+  V: "VISHAL"
+  P: "PRATIK"
+  T: "TARUN"
+
+# Scoreboard grid column layout settings
+grid:
+  col_start_x: 270
+  col_width: 154
+  crop_y_start: 20
+  crop_y_end: 43
+  
+  # Standard roll ROI windows relative to column start
+  roll1_roi_x: [0, 45]
+  roll2_roi_x: [100, 130]
+  
+  # Frame 10 roll ROI windows
+  roll1_f10_x: [0, 40]
+  roll2_f10_x: [50, 90]
+  roll3_f10_x: [100, 140]
+
+# Preprocessing and OCR engine configuration
+ocr:
+  mode: "custom"                           # "custom" (high-precision NCC template matcher) or "easyocr"
+  binary_threshold: 150                     # Binary threshold for symbol extraction
+  confidence_threshold: 0.82                # Minimum similarity score to accept OCR
+  min_required_votes: 5                     # Frames required to stabilize and commit rolls
+  active_row_threshold_red: 180            # BGR Red threshold for yellow indicator
+  active_row_threshold_blue: 100           # BGR Blue threshold for yellow indicator
