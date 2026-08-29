@@ -47,6 +47,34 @@ td.total-score-cell {
     color: #F59E0B; /* yellow-500 */
 }
 
+/* Flowchart Step Highlights */
+.flow-step {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flow-step.active {
+    background-color: rgba(234, 179, 8, 0.15);
+    border-color: #EAB308;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.25);
+}
+
+.flow-step.completed {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10B981;
+}
+
+.flow-step.completed .text-xs {
+    color: #34D399;
+}
+
+/* Sample Buttons active state */
+.active-sample {
+    background-color: rgba(234, 179, 8, 0.2) !important;
+    border-color: #EAB308 !important;
+    color: #FACC15 !important;
+}
+
 /* Transitions */
 .transition-all {
     transition: all 0.3s ease;

@@ -19,12 +19,15 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <span class="text-yellow-500 font-bold text-xl tracking-wider">
-                        <i class="fa-solid fa-bowling-ball mr-2"></i>FOG TECHNOLOGIES
+                    <span class="text-yellow-500 font-bold text-xl tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-bowling-ball"></i> FOG TECHNOLOGIES
                     </span>
                 </div>
-                <div class="text-sm font-semibold text-gray-400">
-                    CV Engineer Assessment: Scoreboard Data Extraction
+                <div class="text-sm font-semibold text-gray-400 flex items-center gap-4">
+                    <span class="hidden sm:inline">CV Engineer Assessment: Scoreboard Data Extraction</span>
+                    <a href="https://github.com/KGupta171025/FOG_TECHNOLOGIES_COMPUTER_VISION_ENGINEER" target="_blank" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                        <i class="fa-brands fa-github"></i> GitHub Repo
+                    </a>
                 </div>
             </div>
         </div>
@@ -40,21 +43,21 @@
             </div>
             <div class="relative z-10 space-y-4 max-w-3xl">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/25">
-                    Interactive Dashboard
+                    Interactive Video Dashboard
                 </span>
                 <h1 class="text-4xl font-extrabold text-white leading-tight">
                     Bowling Scoreboard Data Extraction
                 </h1>
                 <p class="text-lg text-gray-300">
-                    A Computer Vision solution to automatically track and extract scoreboard data from video feeds. 
-                    Built with OpenCV using normalized cross-correlation, color segmentation, and temporal filtering.
+                    A complete Computer Vision solution to automatically track and extract scoreboard data from bowling video feeds. 
+                    Upload your own video or test sample clips with real-time OCR, temporal filtering, and structured scoring.
                 </p>
                 <div class="flex flex-wrap gap-4 pt-2">
                     <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
-                        <i class="fa-brands fa-python text-yellow-400"></i> Python / OpenCV
+                        <i class="fa-brands fa-python text-yellow-400"></i> Python 3.11+ / OpenCV / uv
                     </span>
                     <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
-                        <i class="fa-brands fa-js-square text-yellow-400"></i> HTML5 / JS (GitHub Pages)
+                        <i class="fa-solid fa-microchip text-yellow-400"></i> Template Matching + EasyOCR
                     </span>
                     <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-green-400"></i> 100% Extraction Accuracy
@@ -63,18 +66,214 @@
             </div>
         </div>
 
+        <!-- Video Insertion & Pipeline Control Center -->
+        <section class="bg-gray-950 p-6 md:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-gray-800 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-video text-yellow-500"></i> Video Input & Extraction Center
+                    </h2>
+                    <p class="text-sm text-gray-400">Add or upload a video file to run the CV extraction pipeline</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Hidden File Input -->
+                    <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo" class="hidden">
+                    
+                    <!-- Add Video Button -->
+                    <button id="add-video-btn" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-yellow-500/20 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-base"></i> Add / Insert Video
+                    </button>
+
+                    <!-- Process Video Button -->
+                    <button id="process-video-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-indigo-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-play text-base"></i> Run Extraction Pipeline
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload Area & Source Selector Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Dropzone Card -->
+                <div id="dropzone" class="lg:col-span-2 border-2 border-dashed border-gray-700 hover:border-yellow-500/60 bg-gray-900/40 rounded-xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition group">
+                    <div class="w-16 h-16 rounded-full bg-gray-800 group-hover:bg-yellow-500/10 text-gray-400 group-hover:text-yellow-400 flex items-center justify-center text-2xl mb-3 transition">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">Click to Browse or Drag & Drop Video File</h3>
+                    <p class="text-xs text-gray-400 mb-3">Supports MP4, WebM, QuickTime (.mov), AVI (Max 500MB)</p>
+                    <span class="text-xs font-semibold px-3 py-1 bg-gray-800 text-yellow-400 rounded-full border border-gray-700">
+                        Selected: <span id="current-video-name">input_compressed.mp4 (Default Sample)</span>
+                    </span>
+                </div>
+
+                <!-- Video Metadata & Sample Selector Card -->
+                <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-5 space-y-4">
+                    <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-yellow-500"></i> Video Properties
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-gray-800">
+                            <span class="text-gray-400">Resolution:</span>
+                            <span id="meta-resolution" class="font-semibold text-white">1280 x 720 (HD)</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-800">
+                            <span class="text-gray-400">Duration:</span>
+                            <span id="meta-duration" class="font-semibold text-white">57.83 seconds</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-800">
+                            <span class="text-gray-400">File Size:</span>
+                            <span id="meta-size" class="font-semibold text-white">11.15 MB</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="text-gray-400">Scoreboard Status:</span>
+                            <span id="meta-status" class="font-semibold text-green-400">Stationary (NCC > 0.96)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <label class="text-xs font-semibold text-gray-400 block mb-1.5">Or Choose Preloaded Sample:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="sample-input-btn" class="bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 py-2 px-2.5 rounded-lg border border-gray-700 transition font-medium text-center truncate active-sample">
+                                📹 Raw Input
+                            </button>
+                            <button id="sample-output-btn" class="bg-gray-800 hover:bg-gray-700 text-xs text-gray-200 py-2 px-2.5 rounded-lg border border-gray-700 transition font-medium text-center truncate">
+                                🎯 Annotated HUD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Flowchart Tracker -->
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-yellow-500"></i> Computer Vision Processing Flowchart
+                    </h4>
+                    <span id="pipeline-status-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                        Ready
+                    </span>
+                </div>
+                
+                <!-- Flowchart Node Steps -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 text-center">
+                    <div id="flow-step-1" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-blue-400"><i class="fa-solid fa-file-video"></i></div>
+                        <div class="text-xs font-bold text-white">1. Input video</div>
+                    </div>
+                    <div id="flow-step-2" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-indigo-400"><i class="fa-solid fa-images"></i></div>
+                        <div class="text-xs font-bold text-white">2. Extract frames</div>
+                    </div>
+                    <div id="flow-step-3" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-purple-400"><i class="fa-solid fa-crosshairs"></i></div>
+                        <div class="text-xs font-bold text-white">3. Locate scoreboard</div>
+                    </div>
+                    <div id="flow-step-4" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-pink-400"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <div class="text-xs font-bold text-white">4. Preprocess image</div>
+                    </div>
+                    <div id="flow-step-5" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-amber-400"><i class="fa-solid fa-font"></i></div>
+                        <div class="text-xs font-bold text-white">5. OCR extraction</div>
+                    </div>
+                    <div id="flow-step-6" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-teal-400"><i class="fa-solid fa-filter"></i></div>
+                        <div class="text-xs font-bold text-white">6. Clean & validate</div>
+                    </div>
+                    <div id="flow-step-7" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-emerald-400"><i class="fa-solid fa-table-list"></i></div>
+                        <div class="text-xs font-bold text-white">7. Structured data</div>
+                    </div>
+                    <div id="flow-step-8" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
+                        <div class="text-base mb-1 text-green-400"><i class="fa-solid fa-file-export"></i></div>
+                        <div class="text-xs font-bold text-white">8. CSV / JSON output</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar (hidden by default, shows during Run Extraction) -->
+                <div id="progress-container" class="hidden pt-2 space-y-1.5">
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span id="progress-label">Executing Computer Vision Pipeline...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800">
+                        <div id="progress-bar" class="bg-gradient-to-r from-yellow-500 to-green-500 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Player Comparison Section -->
+        <section class="space-y-6">
+            <div class="border-b border-gray-800 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-play-circle text-yellow-500"></i> Video Feed & CV Tracking HUD
+                    </h2>
+                    <p class="text-sm text-gray-400">Real-time side-by-side feed comparison</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="sync-play-btn" class="bg-gray-800 hover:bg-gray-700 text-yellow-400 px-3.5 py-1.5 rounded-lg border border-gray-700 text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate text-xs"></i> Synchronize Playback
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Input Player -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-semibold text-gray-300 flex items-center gap-2 text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Input Video Feed
+                        </h4>
+                        <span id="input-video-tag" class="text-xs text-gray-500 font-mono">Source: input_compressed.mp4</span>
+                    </div>
+                    <div class="relative aspect-video bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl flex items-center justify-center">
+                        <video id="input-video-player" controls class="w-full h-full object-contain">
+                            <source src="input_compressed.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+
+                <!-- Processed Output Player -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-semibold text-gray-300 flex items-center gap-2 text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span> Processed Output (Live HUD)
+                        </h4>
+                        <span class="text-xs text-yellow-500 font-semibold">100% Extraction Accuracy</span>
+                    </div>
+                    <div class="relative aspect-video bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl flex items-center justify-center">
+                        <video id="output-video-player" controls class="w-full h-full object-contain">
+                            <source src="output_compressed.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Interactive Scoreboard Section -->
         <section class="space-y-6">
-            <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-800 pb-4">
                 <div class="space-y-1">
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-table text-yellow-500"></i> Live Extracted Scoreboard
+                        <i class="fa-solid fa-table text-yellow-500"></i> Extracted Structured Scoreboard
                     </h2>
-                    <p class="text-sm text-gray-400">Scores parsed dynamically from the video stream</p>
+                    <p class="text-sm text-gray-400">Values stabilized via temporal majority voting</p>
                 </div>
-                <button id="refresh-btn" class="bg-gray-800 hover:bg-gray-700 text-yellow-500 px-4 py-2 rounded-lg border border-gray-700 text-sm font-semibold transition flex items-center gap-2">
-                    <i class="fa-solid fa-arrows-rotate"></i> Reload Score Data
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="download-json-btn" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3.5 py-2 rounded-lg border border-gray-700 text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-code text-yellow-500"></i> JSON
+                    </button>
+                    <button id="download-csv-btn" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3.5 py-2 rounded-lg border border-gray-700 text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-green-500"></i> CSV
+                    </button>
+                    <button id="refresh-btn" class="bg-gray-800 hover:bg-gray-700 text-yellow-500 px-3.5 py-2 rounded-lg border border-gray-700 text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i> Reload
+                    </button>
+                </div>
             </div>
 
             <!-- Scoreboard Grid Container -->
@@ -129,48 +328,13 @@
             </div>
         </section>
 
-        <!-- Video Demo Section -->
-        <section class="space-y-6">
-            <div class="border-b border-gray-800 pb-4">
-                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-video text-yellow-500"></i> Demo Video
-                </h2>
-                <p class="text-sm text-gray-400">Compare input and output computer vision tracking in real time</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <h4 class="font-semibold text-gray-300 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Input Video Feed
-                    </h4>
-                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-800 shadow-lg flex items-center justify-center">
-                        <video controls class="w-full h-full">
-                            <source src="input_compressed.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                </div>
-                <div class="space-y-3">
-                    <h4 class="font-semibold text-gray-300 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span> Processed Output (Live HUD)
-                    </h4>
-                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-800 shadow-lg flex items-center justify-center">
-                        <video controls class="w-full h-full">
-                            <source src="output_compressed.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- CV Technical Methodology -->
         <section class="space-y-6">
             <div class="border-b border-gray-800 pb-4">
                 <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-microchip text-yellow-500"></i> Computer Vision Pipeline
+                    <i class="fa-solid fa-microchip text-yellow-500"></i> Technical Implementation Overview
                 </h2>
-                <p class="text-sm text-gray-400">Technical design and implementation methodology</p>
+                <p class="text-sm text-gray-400">Senior-engineer-grade computer vision pipeline</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
@@ -180,25 +344,25 @@
                     </div>
                     <h4 class="font-bold text-white text-base">1. Scoreboard Detection</h4>
                     <p class="text-gray-400 leading-relaxed">
-                        Uses normalized cross-correlation (NCC) of a static template matching the lane number ("6") to detect frame-by-frame scoreboard visibility. This reliably bypasses cartoon animations and secondary status screens.
+                        Uses normalized cross-correlation (NCC) on the lane number indicator ("6") to track visibility across panning frames. Bypasses pin-deck views and animations automatically.
                     </p>
                 </div>
                 <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 space-y-2">
                     <div class="w-10 h-10 rounded-lg bg-yellow-500/10 text-yellow-500 flex items-center justify-center text-lg mb-2">
                         <i class="fa-solid fa-user-check"></i>
                     </div>
-                    <h4 class="font-bold text-white text-base">2. Active Row Segmentation</h4>
+                    <h4 class="font-bold text-white text-base">2. Active Turn Segmentation</h4>
                     <p class="text-gray-400 leading-relaxed">
-                        Scans the player initials column using RGB color thresholding to locate the yellow-orange active turn indicator. Crops active player names dynamically from the top status bar.
+                        Scans the player initials column using RGB color thresholding to detect the active player row. Automatically inverts crops for active players to ensure uniform binarization.
                     </p>
                 </div>
                 <div class="bg-gray-950 p-6 rounded-xl border border-gray-800 space-y-2">
                     <div class="w-10 h-10 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center text-lg mb-2">
                         <i class="fa-solid fa-filter"></i>
                     </div>
-                    <h4 class="font-bold text-white text-base">3. Temporal Filtering & OCR</h4>
+                    <h4 class="font-bold text-white text-base">3. Temporal Voting & Scoring</h4>
                     <p class="text-gray-400 leading-relaxed">
-                        Crops Roll 1 and Roll 2 ROIs from each frame column. Grayscale templates of rolls (X, /, -, 1-9) are matched using NCC. A temporal filter requires 5 consecutive matching frames to latch/commit rolls.
+                        Employs global majority voting across visible frames (minimum 5 votes) to filter transient motion blur. Scores are calculated dynamically using official bowling strike and spare rules.
                     </p>
                 </div>
             </div>
@@ -209,7 +373,7 @@
     <!-- Footer -->
     <footer class="bg-gray-950 border-t border-gray-800 py-8 mt-12 text-center text-gray-500 text-sm">
         <p>&copy; 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.</p>
-        <p class="mt-2 text-xs text-gray-600">Built with OpenCV, Tailwind, and Chart.js</p>
+        <p class="mt-2 text-xs text-gray-600">Built with Python, OpenCV, Tailwind, and Chart.js</p>
     </footer>
 
     <!-- App JS -->
