@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     processVideoBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }, 600);
             }
-        }, 280);
+        }, 110);
     }
 
     function resetPipelineAndData() {
