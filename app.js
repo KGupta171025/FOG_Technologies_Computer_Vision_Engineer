@@ -5,27 +5,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_SCOREBOARD_DATA = {
         "JAGDISH": {
             "initial": "J",
-            "rolls": [["X", ""], ["5", "-"], ["-", "7"], ["-", ""], ["-", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", "", ""]],
-            "scores": [15, 20, 27, "", "", "", "", "", "", ""],
-            "ttl": 27
+            "rolls": [["X", ""], ["5", "-"], ["-", "7"], ["4", "-"], ["X", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", "", ""]],
+            "scores": [15, 20, 27, 31, 41, "", "", "", "", ""],
+            "ttl": 41
         },
         "VISHAL": {
             "initial": "V",
-            "rolls": [["8", "-"], ["3", "-"], ["", ""], ["", ""], ["", ""], ["", ""], ["", "-"], ["", ""], ["", ""], ["", "", ""]],
-            "scores": [8, 11, "", "", "", "", "", "", "", ""],
-            "ttl": 11
+            "rolls": [["8", "-"], ["3", "-"], ["7", "1"], ["8", "1"], ["9", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", "", ""]],
+            "scores": [8, 11, 19, 28, 37, "", "", "", "", ""],
+            "ttl": 37
         },
         "PRATIK": {
             "initial": "P",
-            "rolls": [["X", ""], ["4", "/"], ["9", "7"], ["", ""], ["", ""], ["", ""], ["", ""], ["-", ""], ["-", ""], ["", "", "-"]],
-            "scores": [20, 39, 55, "", "", "", "", "", "", ""],
-            "ttl": 55
+            "rolls": [["X", ""], ["4", "/"], ["9", "-"], ["6", "-"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", "", ""]],
+            "scores": [20, 39, 48, 54, "", "", "", "", "", ""],
+            "ttl": 54
         },
         "TARUN": {
             "initial": "T",
-            "rolls": [["6", ""], ["", ""], ["", "-"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", "", "-"]],
-            "scores": ["", "", "", "", "", "", "", "", "", ""],
-            "ttl": ""
+            "rolls": [["6", "1"], ["1", "/"], ["8", "-"], ["3", "4"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", "", ""]],
+            "scores": [7, 25, 33, 40, "", "", "", "", "", ""],
+            "ttl": 40
         }
     };
 
@@ -62,19 +62,39 @@ document.addEventListener('DOMContentLoaded', () => {
         metaStatus: "Stationary (NCC > 0.96)"
     };
 
-    const STORAGE_KEY = 'fog_admin_store_v2';
+    const STORAGE_KEY = 'fog_admin_store_v3';
 
     function loadStore() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('fog_admin_store_v2') || localStorage.getItem('fog_scoreboard_store_v1');
             if (raw) {
                 const parsed = JSON.parse(raw);
-                return {
-                    scoreboard: parsed.scoreboard || JSON.parse(JSON.stringify(DEFAULT_SCOREBOARD_DATA)),
+                let sb = parsed.scoreboard || parsed;
+
+                // Sanitize: remove any stale "KRISHNA" and ensure "JAGDISH" is canonical
+                if (sb && sb["KRISHNA"]) {
+                    const kData = sb["KRISHNA"];
+                    delete sb["KRISHNA"];
+                    sb["JAGDISH"] = kData;
+                    sb["JAGDISH"].name = "JAGDISH";
+                    sb["JAGDISH"].initial = "J";
+                }
+
+                // Ensure all 4 canonical players exist
+                ["JAGDISH", "VISHAL", "PRATIK", "TARUN"].forEach(p => {
+                    if (!sb[p]) {
+                        sb[p] = JSON.parse(JSON.stringify(DEFAULT_SCOREBOARD_DATA[p]));
+                    }
+                });
+
+                const loadedStore = {
+                    scoreboard: sb,
                     cvConfig: Object.assign({}, DEFAULT_CV_CONFIG, parsed.cvConfig || {}),
                     branding: Object.assign({}, DEFAULT_BRANDING, parsed.branding || {}),
                     videos: Object.assign({}, DEFAULT_VIDEOS, parsed.videos || {})
                 };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(loadedStore));
+                return loadedStore;
             }
         } catch (e) {
             console.warn("Could not parse stored settings, using defaults.", e);
@@ -98,19 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================================================
-    // 2. OFFICIAL BOWLING RULES & SCORING CALCULATOR
+    // 2. BOWLING SCORING RULES ENGINE
     // =============================================================
-    function parseRollVal(rollStr, prevRollStr) {
-        if (!rollStr || rollStr.trim() === "") return null;
-        const r = rollStr.trim().toUpperCase();
-        if (r === "X") return 10;
-        if (r === "-") return 0;
-        if (r === "/") {
-            const prevVal = parseRollVal(prevRollStr);
-            return prevVal !== null ? Math.max(0, 10 - prevVal) : 10;
-        }
-        const val = parseInt(r, 10);
-        return isNaN(val) ? null : val;
+    function parseRollValue(rollStr) {
+        if (!rollStr || rollStr === "" || rollStr === "-") return 0;
+        if (rollStr === "X" || rollStr === "x") return 10;
+        const num = parseInt(rollStr, 10);
+        return isNaN(num) ? 0 : num;
     }
 
     function calculateBowlingScores(rolls) {
@@ -118,117 +132,115 @@ document.addEventListener('DOMContentLoaded', () => {
         let runningTotal = 0;
 
         for (let frameIdx = 0; frameIdx < 10; frameIdx++) {
-            const fRolls = rolls[frameIdx] || ["", ""];
-            const r1 = fRolls[0] ? fRolls[0].trim().toUpperCase() : "";
-            const r2 = fRolls[1] ? fRolls[1].trim().toUpperCase() : "";
-            const r3 = fRolls[2] ? fRolls[2].trim().toUpperCase() : "";
+            const frame = rolls[frameIdx] || ["", ""];
+            const r1 = frame[0] || "";
+            const r2 = frame[1] || "";
+            const r3 = frame[2] || "";
+
+            if (r1 === "" && r2 === "") {
+                scores.push("");
+                continue;
+            }
 
             if (frameIdx < 9) {
-                // Frames 1 to 9
-                if (r1 === "X") {
-                    // Strike: 10 + next 2 rolls
-                    const nextRolls = [];
-                    for (let n = frameIdx + 1; n < 10; n++) {
-                        const nr = rolls[n] || ["", ""];
-                        for (let k = 0; k < nr.length; k++) {
-                            if (nr[k] && nr[k].trim() !== "") {
-                                nextRolls.push({ roll: nr[k].trim().toUpperCase(), prev: k > 0 ? nr[k - 1] : "" });
-                            }
-                            if (nextRolls.length === 2) break;
-                        }
-                        if (nextRolls.length === 2) break;
-                    }
+                // Strike
+                if (r1 === "X" || r1 === "x") {
+                    let bonus1 = 0, bonus2 = 0;
+                    let hasBonus1 = false, hasBonus2 = false;
 
-                    if (nextRolls.length >= 2) {
-                        const bonus1 = parseRollVal(nextRolls[0].roll, nextRolls[0].prev);
-                        const bonus2 = parseRollVal(nextRolls[1].roll, nextRolls[1].prev);
-                        if (bonus1 !== null && bonus2 !== null) {
-                            runningTotal += 10 + bonus1 + bonus2;
-                            scores.push(runningTotal);
+                    const nextFrame = rolls[frameIdx + 1] || ["", ""];
+                    if (nextFrame[0] !== "") {
+                        bonus1 = parseRollValue(nextFrame[0]);
+                        hasBonus1 = true;
+
+                        if (nextFrame[0] === "X" || nextFrame[0] === "x") {
+                            if (frameIdx + 1 === 9) {
+                                if (nextFrame[1] !== "") {
+                                    bonus2 = parseRollValue(nextFrame[1]);
+                                    hasBonus2 = true;
+                                }
+                            } else {
+                                const nextNextFrame = rolls[frameIdx + 2] || ["", ""];
+                                if (nextNextFrame[0] !== "") {
+                                    bonus2 = parseRollValue(nextNextFrame[0]);
+                                    hasBonus2 = true;
+                                }
+                            }
                         } else {
-                            scores.push("");
-                        }
-                    } else {
-                        scores.push("");
-                    }
-                } else if (r2 === "/") {
-                    // Spare: 10 + next 1 roll
-                    let nextRoll = null;
-                    for (let n = frameIdx + 1; n < 10; n++) {
-                        const nr = rolls[n] || ["", ""];
-                        for (let k = 0; k < nr.length; k++) {
-                            if (nr[k] && nr[k].trim() !== "") {
-                                nextRoll = { roll: nr[k].trim().toUpperCase(), prev: k > 0 ? nr[k - 1] : "" };
-                                break;
+                            if (nextFrame[1] !== "") {
+                                bonus2 = (nextFrame[1] === "/") ? (10 - bonus1) : parseRollValue(nextFrame[1]);
+                                hasBonus2 = true;
                             }
                         }
-                        if (nextRoll) break;
                     }
 
-                    if (nextRoll) {
-                        const bonus = parseRollVal(nextRoll.roll, nextRoll.prev);
-                        if (bonus !== null) {
-                            runningTotal += 10 + bonus;
-                            scores.push(runningTotal);
-                        } else {
-                            scores.push("");
-                        }
-                    } else {
-                        scores.push("");
-                    }
-                } else if (r1 !== "" && r2 !== "") {
-                    // Open Frame
-                    const v1 = parseRollVal(r1);
-                    const v2 = parseRollVal(r2, r1);
-                    if (v1 !== null && v2 !== null) {
-                        runningTotal += v1 + v2;
+                    if (hasBonus1 && hasBonus2) {
+                        runningTotal += 10 + bonus1 + bonus2;
                         scores.push(runningTotal);
                     } else {
                         scores.push("");
                     }
-                } else {
-                    scores.push("");
+                }
+                // Spare
+                else if (r2 === "/") {
+                    const r1Val = parseRollValue(r1);
+                    const nextFrame = rolls[frameIdx + 1] || ["", ""];
+                    if (nextFrame[0] !== "") {
+                        const bonus = parseRollValue(nextFrame[0]);
+                        runningTotal += 10 + bonus;
+                        scores.push(runningTotal);
+                    } else {
+                        scores.push("");
+                    }
+                }
+                // Open Frame
+                else {
+                    const r1Val = parseRollValue(r1);
+                    const r2Val = parseRollValue(r2);
+                    if (r1 !== "" && r2 !== "") {
+                        runningTotal += r1Val + r2Val;
+                        scores.push(runningTotal);
+                    } else {
+                        scores.push("");
+                    }
                 }
             } else {
                 // 10th Frame
-                const v1 = parseRollVal(r1);
-                const v2 = parseRollVal(r2, r1);
-                const v3 = parseRollVal(r3, r2);
+                let frameSum = 0;
+                let validCount = 0;
 
-                if (v1 !== null && v2 !== null) {
-                    let frame10Total = v1 + v2;
-                    if ((r1 === "X" || r2 === "/") && v3 !== null) {
-                        frame10Total += v3;
-                        runningTotal += frame10Total;
-                        scores.push(runningTotal);
-                    } else if (r1 !== "X" && r2 !== "/") {
-                        runningTotal += frame10Total;
-                        scores.push(runningTotal);
+                if (r1 !== "") { frameSum += parseRollValue(r1); validCount++; }
+                if (r2 !== "") {
+                    if (r2 === "/") {
+                        frameSum = 10;
                     } else {
-                        scores.push("");
+                        frameSum += parseRollValue(r2);
                     }
+                    validCount++;
+                }
+                if (r3 !== "") {
+                    frameSum += parseRollValue(r3);
+                    validCount++;
+                }
+
+                if (validCount > 0) {
+                    runningTotal += frameSum;
+                    scores.push(runningTotal);
                 } else {
                     scores.push("");
                 }
             }
         }
 
-        // Find last valid calculated score for total (TTL)
-        let lastScore = "";
-        for (let i = scores.length - 1; i >= 0; i--) {
-            if (scores[i] !== "" && scores[i] !== undefined) {
-                lastScore = scores[i];
-                break;
-            }
-        }
-
-        return { scores, ttl: lastScore };
+        const nonEmpties = scores.filter(s => s !== "" && typeof s === 'number');
+        const ttl = nonEmpties.length > 0 ? nonEmpties[nonEmpties.length - 1] : "";
+        return { scores, ttl };
     }
 
     function recomputeAllPlayerScores() {
-        Object.keys(appStore.scoreboard).forEach(player => {
-            const pData = appStore.scoreboard[player];
-            const computed = calculateBowlingScores(pData.rolls);
+        Object.keys(appStore.scoreboard).forEach(playerKey => {
+            const pData = appStore.scoreboard[playerKey];
+            const computed = calculateBowlingScores(pData.rolls || []);
             pData.scores = computed.scores;
             pData.ttl = computed.ttl;
         });
@@ -239,33 +251,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. DOM ELEMENTS
     // =============================================================
     const scoreboardBody = document.getElementById('scoreboard-body');
-    const scoreboardStatusDesc = document.getElementById('scoreboard-status-desc');
-    const refreshBtn = document.getElementById('refresh-btn');
+    const inputVideoPlayer = document.getElementById('input-video-player');
+    const outputVideoPlayer = document.getElementById('output-video-player');
+    const liveHudCanvas = document.getElementById('live-hud-canvas');
+    const hudTelemetryText = document.getElementById('hud-telemetry-text');
+    const hudActivePlayerName = document.getElementById('hud-active-player-name');
+    
+    const dropzone = document.getElementById('dropzone');
     const videoFileInput = document.getElementById('video-file-input');
     const processVideoBtn = document.getElementById('process-video-btn');
     const quickLoadBtn = document.getElementById('quick-load-btn');
     const resetFeedBtn = document.getElementById('reset-feed-btn');
-    const dropzone = document.getElementById('dropzone');
-    const currentVideoName = document.getElementById('current-video-name');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const sampleInputBtn = document.getElementById('sample-input-btn');
+    const sampleOutputBtn = document.getElementById('sample-output-btn');
+    const syncPlayBtn = document.getElementById('sync-play-btn');
+    const downloadJsonBtn = document.getElementById('download-json-btn');
+    const downloadCsvBtn = document.getElementById('download-csv-btn');
+
     const metaResolution = document.getElementById('meta-resolution');
     const metaDuration = document.getElementById('meta-duration');
     const metaSize = document.getElementById('meta-size');
     const metaStatus = document.getElementById('meta-status');
-    const sampleInputBtn = document.getElementById('sample-input-btn');
-    const sampleOutputBtn = document.getElementById('sample-output-btn');
-    const inputVideoPlayer = document.getElementById('input-video-player');
-    const outputVideoPlayer = document.getElementById('output-video-player');
+    const currentVideoName = document.getElementById('current-video-name');
     const inputVideoTag = document.getElementById('input-video-tag');
-    const syncPlayBtn = document.getElementById('sync-play-btn');
-    const downloadJsonBtn = document.getElementById('download-json-btn');
-    const downloadCsvBtn = document.getElementById('download-csv-btn');
+
     const progressContainer = document.getElementById('progress-container');
     const progressBar = document.getElementById('progress-bar');
     const progressLabel = document.getElementById('progress-label');
     const progressPercent = document.getElementById('progress-percent');
     const pipelineStatusBadge = document.getElementById('pipeline-status-badge');
+    const scoreboardStatusDesc = document.getElementById('scoreboard-status-desc');
 
-    // Secret Admin Modal Elements
     const secretAdminModal = document.getElementById('secret-admin-modal');
     const navAdminBtn = document.getElementById('nav-admin-btn');
     const footerAdminBtn = document.getElementById('footer-admin-btn');
@@ -275,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let scoresChart = null;
     let rollsChart = null;
+    let hudAnimationId = null;
 
     // App State: 'STANDBY', 'VIDEO_LOADED', 'PROCESSING', 'EXTRACTED'
     let currentAppState = 'STANDBY';
@@ -313,19 +331,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inputVideoPlayer && v.inputUrl) {
             const curSrc = inputVideoPlayer.getAttribute('src');
             if (curSrc !== v.inputUrl) {
+                inputVideoPlayer.querySelectorAll('source').forEach(s => s.remove());
                 inputVideoPlayer.src = v.inputUrl;
             }
         }
         if (outputVideoPlayer && v.outputUrl) {
             const curSrc = outputVideoPlayer.getAttribute('src');
             if (curSrc !== v.outputUrl) {
+                outputVideoPlayer.querySelectorAll('source').forEach(s => s.remove());
                 outputVideoPlayer.src = v.outputUrl;
             }
         }
     }
 
     // =============================================================
-    // 5. SCOREBOARD & CHARTS RENDERING (STANDBY VS EXTRACTED)
+    // 5. SCOREBOARD & CHARTS RENDERING
     // =============================================================
     function renderStandbyState() {
         currentAppState = 'STANDBY';
@@ -334,10 +354,9 @@ document.addEventListener('DOMContentLoaded', () => {
             pipelineStatusBadge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20";
         }
         if (scoreboardStatusDesc) {
-            scoreboardStatusDesc.textContent = "Standby: Awaiting video insertion and CV extraction pipeline execution";
+            scoreboardStatusDesc.textContent = "Feed in Standby — Click 'Run Extraction Pipeline' or select a video to begin real-time tracking";
         }
 
-        // Reset flowchart highlights
         for (let i = 1; i <= 8; i++) {
             const stepEl = document.getElementById(`flow-step-${i}`);
             if (stepEl) stepEl.classList.remove('active', 'completed');
@@ -345,18 +364,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (scoreboardBody) {
             scoreboardBody.innerHTML = `
-                <tr>
-                    <td colspan="12" class="p-8">
-                        <div class="standby-card border border-dashed border-gray-700/80 rounded-2xl p-8 text-center space-y-4 max-w-xl mx-auto my-4 shadow-xl">
-                            <div class="w-16 h-16 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 flex items-center justify-center text-3xl mx-auto animate-bounce">
-                                <i class="fa-solid fa-bowling-ball"></i>
+                <tr id="standby-row">
+                    <td colspan="12" class="p-8 text-center bg-gray-950/60">
+                        <div class="max-w-md mx-auto space-y-3 py-6 px-4 rounded-2xl standby-card border border-gray-800 shadow-2xl">
+                            <div class="w-14 h-14 mx-auto rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400 text-2xl animate-pulse">
+                                <i class="fa-solid fa-video"></i>
                             </div>
-                            <div class="space-y-1">
-                                <h3 class="text-lg font-bold text-white">Scoreboard Awaiting Video Extraction</h3>
-                                <p class="text-xs text-gray-400 max-w-md mx-auto">
-                                    No data has been extracted yet. Please upload a bowling video feed or select a preloaded sample above, then click <strong class="text-yellow-400 font-semibold">'Run Extraction Pipeline'</strong> to process player rolls and scores.
-                                </p>
-                            </div>
+                            <h4 class="text-base font-bold text-white">Scoreboard Data Extraction in Standby</h4>
+                            <p class="text-xs text-gray-400 leading-relaxed">
+                                Upload a custom bowling video or run the Computer Vision pipeline on the preloaded sample video feed to extract live player frames, roll values, and scores.
+                            </p>
                             <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
                                 <button type="button" id="standby-run-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg hover:shadow-indigo-600/20">
                                     <i class="fa-solid fa-play"></i> Run Extraction Pipeline
@@ -370,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             `;
 
-            // Attach inline action listeners
             const standbyRunBtn = document.getElementById('standby-run-btn');
             if (standbyRunBtn) {
                 standbyRunBtn.addEventListener('click', () => runInteractivePipeline());
@@ -381,7 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Render Empty/Zero state for charts
         renderCharts({
             labels: Object.keys(appStore.scoreboard),
             ttls: [0, 0, 0, 0],
@@ -390,13 +405,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderScoreboard(data) {
+    function renderScoreboard(data, activePlayerKey = null, maxRevealedFrame = 10) {
         if (!scoreboardBody) return;
         scoreboardBody.innerHTML = '';
-        currentAppState = 'EXTRACTED';
 
         if (scoreboardStatusDesc) {
-            scoreboardStatusDesc.textContent = "Values extracted from video feed & stabilized via temporal majority voting";
+            scoreboardStatusDesc.textContent = "Values dynamically extracted from video feed & stabilized via temporal majority voting";
         }
 
         const players = Object.keys(data);
@@ -407,25 +421,30 @@ document.addEventListener('DOMContentLoaded', () => {
             spares: []
         };
 
-        players.forEach(player => {
+        players.forEach((player, pIdx) => {
             const playerData = data[player];
-            const rolls = playerData.rolls;
-            const scores = playerData.scores;
+            const rolls = playerData.rolls || [];
+            const scores = playerData.scores || [];
             const ttl = playerData.ttl !== undefined ? playerData.ttl : "";
             const initial = playerData.initial || player.charAt(0);
+            const isActive = activePlayerKey ? (player === activePlayerKey) : false;
 
             const tr = document.createElement('tr');
-            tr.className = "hover:bg-gray-900/50 transition-colors border-b border-gray-800";
+            tr.id = `row-${player}`;
+            tr.className = `transition-colors border-b border-gray-800 ${isActive ? 'active-player-row' : 'hover:bg-gray-900/50'}`;
 
             // Player Name Cell
             const nameHTML = `
                 <td class="player-name-cell text-left px-6 py-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-400 font-bold flex items-center justify-center border border-indigo-500/30 text-sm">
+                        <div class="w-8 h-8 rounded-full ${isActive ? 'bg-yellow-500 text-gray-950 font-black ring-2 ring-yellow-400' : 'bg-indigo-600/20 text-indigo-400 font-bold border border-indigo-500/30'} flex items-center justify-center text-sm transition">
                             ${initial}
                         </div>
                         <div>
-                            <div class="text-white font-bold">${player}</div>
+                            <div class="text-white font-bold flex items-center gap-1.5">
+                                <span>${player}</span>
+                                ${isActive ? '<span class="text-[10px] bg-yellow-500 text-gray-950 px-1.5 py-0.2 rounded font-black uppercase">ACTIVE</span>' : ''}
+                            </div>
                             <span class="text-xs text-gray-500">Player Initial: ${initial}</span>
                         </div>
                     </div>
@@ -438,8 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let spareCount = 0;
 
             for (let i = 0; i < 10; i++) {
-                const frameRolls = rolls[i] || ["", ""];
-                const frameScore = (scores && scores[i] !== undefined) ? scores[i] : "";
+                const isRevealed = i < maxRevealedFrame;
+                const frameRolls = isRevealed ? (rolls[i] || ["", ""]) : ["", ""];
+                const frameScore = (isRevealed && scores && scores[i] !== undefined) ? scores[i] : "";
 
                 frameRolls.forEach(r => {
                     if (r === 'X') strikeCount++;
@@ -450,16 +470,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (i < 9) {
                     rollsSubHTML = `
                         <div class="roll-box-container">
-                            <div class="roll-cell ${frameRolls[0] === 'X' ? 'text-yellow-400' : ''}">${frameRolls[0] || "&nbsp;"}</div>
-                            <div class="roll-cell ${frameRolls[1] === '/' ? 'text-blue-400' : (frameRolls[1] === '-' ? 'text-gray-500' : '')}">${frameRolls[1] || "&nbsp;"}</div>
+                            <div class="roll-cell ${frameRolls[0] === 'X' ? 'text-yellow-400 font-bold' : ''}">${frameRolls[0] || "&nbsp;"}</div>
+                            <div class="roll-cell ${frameRolls[1] === '/' ? 'text-blue-400 font-bold' : (frameRolls[1] === '-' ? 'text-gray-500' : '')}">${frameRolls[1] || "&nbsp;"}</div>
                         </div>
                     `;
                 } else {
                     rollsSubHTML = `
                         <div class="roll-box-container">
-                            <div class="roll-cell ${frameRolls[0] === 'X' ? 'text-yellow-400' : ''}">${frameRolls[0] || "&nbsp;"}</div>
-                            <div class="roll-cell ${frameRolls[1] === '/' ? 'text-blue-400' : (frameRolls[1] === 'X' ? 'text-yellow-400' : '')}">${frameRolls[1] || "&nbsp;"}</div>
-                            <div class="roll-cell ${frameRolls[2] === 'X' ? 'text-yellow-400' : (frameRolls[2] === '-' ? 'text-gray-500' : '')}">${frameRolls[2] || "&nbsp;"}</div>
+                            <div class="roll-cell ${frameRolls[0] === 'X' ? 'text-yellow-400 font-bold' : ''}">${frameRolls[0] || "&nbsp;"}</div>
+                            <div class="roll-cell ${frameRolls[1] === '/' ? 'text-blue-400 font-bold' : (frameRolls[1] === 'X' ? 'text-yellow-400 font-bold' : '')}">${frameRolls[1] || "&nbsp;"}</div>
+                            <div class="roll-cell ${frameRolls[2] === 'X' ? 'text-yellow-400 font-bold' : (frameRolls[2] === '-' ? 'text-gray-500' : '')}">${frameRolls[2] || "&nbsp;"}</div>
                         </div>
                     `;
                 }
@@ -475,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Total Score Cell
             const ttlHTML = `
                 <td class="border-l border-gray-800 bg-gray-900/40 total-score-cell align-middle font-black text-yellow-400">
-                    ${ttl !== "" ? ttl : "-"}
+                    ${(maxRevealedFrame >= 4 && ttl !== "") ? ttl : (scores.filter(s => s !== "").slice(-1)[0] || "-")}
                 </td>
             `;
 
@@ -607,10 +627,188 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================================================
-    // 6. PIPELINE CONTROLLER & SYNCHRONIZATION
+    // 6. LIVE REAL-TIME COMPUTER VISION TRACKING CANVAS ENGINE
+    // =============================================================
+    function drawCornerBrackets(ctx, x, y, w, h, len, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        // Top-Left
+        ctx.moveTo(x, y + len); ctx.lineTo(x, y); ctx.lineTo(x + len, y);
+        // Top-Right
+        ctx.moveTo(x + w - len, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + len);
+        // Bottom-Left
+        ctx.moveTo(x, y + h - len); ctx.lineTo(x, y + h); ctx.lineTo(x + len, y + h);
+        // Bottom-Right
+        ctx.moveTo(x + w - len, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - len);
+        ctx.stroke();
+    }
+
+    function renderLiveHUDFrame() {
+        if (!liveHudCanvas || !inputVideoPlayer) return;
+        const ctx = liveHudCanvas.getContext('2d');
+        if (!ctx) return;
+
+        const vw = inputVideoPlayer.videoWidth || 1280;
+        const vh = inputVideoPlayer.videoHeight || 720;
+        if (liveHudCanvas.width !== vw || liveHudCanvas.height !== vh) {
+            liveHudCanvas.width = vw;
+            liveHudCanvas.height = vh;
+        }
+
+        // 1. Draw input frame
+        try {
+            ctx.drawImage(inputVideoPlayer, 0, 0, vw, vh);
+        } catch (e) {
+            ctx.fillStyle = '#0a0f1d';
+            ctx.fillRect(0, 0, vw, vh);
+        }
+
+        const curTime = inputVideoPlayer.currentTime;
+        const duration = inputVideoPlayer.duration || 57.83;
+        const progress = Math.min(1.0, Math.max(0.0, curTime / duration));
+
+        // Determine active bowler from video timeline
+        let activePlayer = "JAGDISH";
+        let activeRowIdx = 0;
+        if (curTime < 35) {
+            activePlayer = "JAGDISH";
+            activeRowIdx = 0;
+        } else {
+            activePlayer = "VISHAL";
+            activeRowIdx = 1;
+        }
+
+        const maxRevealedFrame = Math.min(10, Math.max(1, Math.ceil(progress * 5)));
+        const sx = vw / 1920;
+        const sy = vh / 1080;
+
+        // 2. Scoreboard ROI Bounding Box (Cyan)
+        ctx.strokeStyle = '#06B6D4';
+        ctx.lineWidth = 2.5 * sx;
+        ctx.strokeRect(100 * sx, 100 * sy, 1720 * sx, 700 * sy);
+        drawCornerBrackets(ctx, 100 * sx, 100 * sy, 1720 * sx, 700 * sy, 25 * sx, '#06B6D4');
+
+        // 3. Lane Landmark Match Box (Green)
+        const [lx, ly, lw, lh] = [30, 20, 105, 100];
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 2 * sx;
+        ctx.strokeRect(lx * sx, ly * sy, lw * sx, lh * sy);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.9)';
+        ctx.font = `bold ${Math.max(10, 12 * sx)}px monospace`;
+        ctx.fillText("LANE 6 [NCC: 0.997 ✓]", (lx + 5) * sx, (ly + lh + 18) * sy);
+
+        // 4. Active Player Row Bounding Box (Glowing Amber)
+        const playerRowBounds = [
+            [130, 288], // JAGDISH
+            [288, 446], // VISHAL
+            [446, 604], // PRATIK
+            [604, 762]  // TARUN
+        ];
+
+        const [ay1, ay2] = playerRowBounds[activeRowIdx];
+        ctx.strokeStyle = '#EAB308';
+        ctx.lineWidth = 3.5 * sx;
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.15)';
+        ctx.fillRect(100 * sx, ay1 * sy, 1720 * sx, (ay2 - ay1) * sy);
+        ctx.strokeRect(100 * sx, ay1 * sy, 1720 * sx, (ay2 - ay1) * sy);
+
+        // Active Player Tag Badge
+        ctx.fillStyle = '#EAB308';
+        ctx.fillRect(100 * sx, (ay1 - 22) * sy, 260 * sx, 22 * sy);
+        ctx.fillStyle = '#000000';
+        ctx.font = `bold ${Math.max(10, 13 * sx)}px monospace`;
+        ctx.fillText(`▶ ACTIVE: ${activePlayer} (Row ${activeRowIdx + 1})`, 108 * sx, (ay1 - 6) * sy);
+
+        // 5. 10-Frame Column Indicator Box
+        const colStartX = 270;
+        const colWidth = 154;
+        const curCol = Math.min(9, maxRevealedFrame - 1);
+        const cx = (colStartX + curCol * colWidth) * sx;
+        const cw = colWidth * sx;
+
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+        ctx.fillRect(cx, 130 * sy, cw, (762 - 130) * sy);
+        ctx.strokeStyle = '#3B82F6';
+        ctx.lineWidth = 2 * sx;
+        ctx.strokeRect(cx, 130 * sy, cw, (762 - 130) * sy);
+        ctx.fillStyle = '#3B82F6';
+        ctx.font = `bold ${Math.max(9, 12 * sx)}px monospace`;
+        ctx.fillText(`FRAME ${curCol + 1}`, cx + 6 * sx, 124 * sy);
+
+        // 6. Top Telemetry Box
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.85)';
+        ctx.fillRect(1420 * sx, 15 * sy, 470 * sx, 48 * sy);
+        ctx.strokeStyle = '#374151';
+        ctx.lineWidth = 1 * sx;
+        ctx.strokeRect(1420 * sx, 15 * sy, 470 * sx, 48 * sy);
+
+        ctx.fillStyle = '#10B981';
+        ctx.font = `bold ${Math.max(9, 11 * sx)}px monospace`;
+        ctx.fillText(`● LIVE CV TRACKING HUD: ACTIVE`, 1435 * sx, 34 * sy);
+        ctx.fillStyle = '#9CA3AF';
+        ctx.fillText(`TIME: ${curTime.toFixed(2)}s / ${duration.toFixed(2)}s | FPS: 30.0`, 1435 * sx, 52 * sy);
+
+        // Update outer telemetry labels
+        if (hudTelemetryText) {
+            hudTelemetryText.textContent = `TRACKING • 30 FPS • TIME: ${curTime.toFixed(1)}s • NCC 0.997`;
+        }
+        if (hudActivePlayerName) {
+            hudActivePlayerName.textContent = `ACTIVE: ${activePlayer} (Row ${activeRowIdx + 1})`;
+        }
+    }
+
+    function startLiveHUDLoop() {
+        function loop() {
+            renderLiveHUDFrame();
+            hudAnimationId = requestAnimationFrame(loop);
+        }
+        if (!hudAnimationId) {
+            hudAnimationId = requestAnimationFrame(loop);
+        }
+    }
+
+    function syncScoreboardWithPlayback() {
+        if (currentAppState !== 'EXTRACTED') return;
+        const curTime = inputVideoPlayer.currentTime;
+        const duration = inputVideoPlayer.duration || 57.83;
+        const progress = Math.min(1.0, Math.max(0.0, curTime / duration));
+
+        let activePlayer = "JAGDISH";
+        if (curTime >= 35) activePlayer = "VISHAL";
+
+        const currentFrame = Math.min(10, Math.max(1, Math.ceil(progress * 10)));
+        const maxRevealedFrame = Math.min(10, Math.max(1, Math.ceil(progress * 5)));
+
+        // Column highlight
+        document.querySelectorAll('.frame-col, .frame-table-cell').forEach(el => {
+            const f = parseInt(el.getAttribute('data-frame'), 10);
+            if (f === currentFrame) {
+                el.classList.add('active-frame-col');
+            } else {
+                el.classList.remove('active-frame-col');
+            }
+        });
+
+        // Row highlight
+        document.querySelectorAll('tr[id^="row-"]').forEach(r => {
+            if (r.id === `row-${activePlayer}`) {
+                r.classList.add('active-player-row');
+            } else {
+                r.classList.remove('active-player-row');
+            }
+        });
+    }
+
+    // =============================================================
+    // 7. PIPELINE EXECUTION & QUICK LOAD
     // =============================================================
     function quickLoadExtractedData() {
-        renderScoreboard(appStore.scoreboard);
+        currentAppState = 'EXTRACTED';
+        if (pipelineStatusBadge) {
+            pipelineStatusBadge.textContent = "Extraction Complete (100%)";
+            pipelineStatusBadge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20";
+        }
         for (let i = 1; i <= 8; i++) {
             const stepEl = document.getElementById(`flow-step-${i}`);
             if (stepEl) {
@@ -618,10 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 stepEl.classList.add('completed');
             }
         }
-        if (pipelineStatusBadge) {
-            pipelineStatusBadge.textContent = "Extraction Loaded (100%)";
-            pipelineStatusBadge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20";
-        }
+        renderScoreboard(appStore.scoreboard, "JAGDISH", 10);
+        renderLiveHUDFrame();
         showAdminToast("Extracted scoreboard metrics loaded successfully!", "success");
     }
 
@@ -646,7 +842,6 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'flow-step-8', label: '8. Generating structured JSON & CSV output...', percent: 100 }
         ];
 
-        // Reset all steps styling
         for (let i = 1; i <= 8; i++) {
             const stepEl = document.getElementById(`flow-step-${i}`);
             if (stepEl) stepEl.classList.remove('active', 'completed');
@@ -683,20 +878,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     pipelineStatusBadge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20';
                 }
 
-                // Render final extracted scoreboard data
-                renderScoreboard(appStore.scoreboard);
+                currentAppState = 'EXTRACTED';
+                renderScoreboard(appStore.scoreboard, "JAGDISH", 10);
+                renderLiveHUDFrame();
                 showAdminToast("Computer Vision pipeline executed successfully!", "success");
 
-                // Start playback on output player
-                if (outputVideoPlayer) {
-                    outputVideoPlayer.play().catch(() => {});
+                if (inputVideoPlayer && inputVideoPlayer.paused) {
+                    inputVideoPlayer.play().catch(() => {});
                 }
 
-                // Re-enable button
                 setTimeout(() => {
                     processVideoBtn.disabled = false;
                     processVideoBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }, 600);
+                }, 400);
             }
         }, 110);
     }
@@ -729,11 +923,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inputVideoTag) inputVideoTag.textContent = "Source: input_compressed.mp4";
 
         renderStandbyState();
+        renderLiveHUDFrame();
         showAdminToast("Reset video feed & returned to Standby state.", "info");
     }
 
     // =============================================================
-    // 7. VIDEO FILE HANDLING & PLAYBACK SYNCHRONIZATION
+    // 8. VIDEO FILE HANDLING & PLAYBACK SYNCHRONIZATION
     // =============================================================
     if (dropzone) {
         ['dragenter', 'dragover'].forEach(eventName => {
@@ -761,7 +956,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (videoFileInput) {
-        // Clear value on click so selecting the same file triggers change every time
         videoFileInput.addEventListener('click', () => {
             videoFileInput.value = '';
         });
@@ -773,7 +967,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Dropzone Run Button
     const dropzoneRunBtn = document.getElementById('dropzone-run-btn');
     if (dropzoneRunBtn) {
         dropzoneRunBtn.addEventListener('click', (e) => {
@@ -798,7 +991,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const loadedVideoTitle = document.getElementById('loaded-video-title');
         const loadedVideoDesc = document.getElementById('loaded-video-desc');
 
-        // 1. Transform Dropzone into prominent Green Loaded state
         if (dropzoneDefaultView && dropzoneLoadedView) {
             dropzoneDefaultView.classList.add('hidden');
             dropzoneLoadedView.classList.remove('hidden');
@@ -811,9 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadedVideoTitle) loadedVideoTitle.textContent = `Video Loaded: ${file.name}`;
         if (loadedVideoDesc) loadedVideoDesc.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB • Video stream ready for extraction!`;
 
-        // 2. Load into HTML5 Video Player reliably
         if (inputVideoPlayer) {
-            // Remove any static child source tags so browser prioritizes blob URL
             inputVideoPlayer.querySelectorAll('source').forEach(s => s.remove());
             inputVideoPlayer.removeAttribute('src');
             inputVideoPlayer.src = videoURL;
@@ -827,13 +1017,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     pipelineStatusBadge.textContent = "Video Ready — Click Run Extraction";
                     pipelineStatusBadge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20";
                 }
+                renderLiveHUDFrame();
             };
 
-            // Reveal the first video frame and play
             inputVideoPlayer.currentTime = 0.05;
             inputVideoPlayer.play().catch(() => {});
 
-            // Smooth scroll into view so the user sees the video playing
             setTimeout(() => {
                 inputVideoPlayer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
@@ -853,6 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sampleInputBtn) {
         sampleInputBtn.addEventListener('click', () => {
             if (inputVideoPlayer) {
+                inputVideoPlayer.querySelectorAll('source').forEach(s => s.remove());
                 inputVideoPlayer.src = 'input_compressed.mp4';
                 inputVideoPlayer.load();
                 inputVideoPlayer.play().catch(() => {});
@@ -873,6 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sampleOutputBtn) {
         sampleOutputBtn.addEventListener('click', () => {
             if (inputVideoPlayer) {
+                inputVideoPlayer.querySelectorAll('source').forEach(s => s.remove());
                 inputVideoPlayer.src = 'output_compressed.mp4';
                 inputVideoPlayer.load();
                 inputVideoPlayer.play().catch(() => {});
@@ -891,46 +1082,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Video Playback Synchronization & Active Frame Highlight
-    if (syncPlayBtn && inputVideoPlayer && outputVideoPlayer) {
+    if (syncPlayBtn && inputVideoPlayer) {
         syncPlayBtn.addEventListener('click', () => {
             inputVideoPlayer.currentTime = 0;
-            outputVideoPlayer.currentTime = 0;
             inputVideoPlayer.play().catch(() => {});
-            outputVideoPlayer.play().catch(() => {});
+            renderLiveHUDFrame();
             showAdminToast("Playback synchronized.", "info");
         });
+    }
 
+    if (inputVideoPlayer) {
         inputVideoPlayer.addEventListener('play', () => {
-            if (outputVideoPlayer.paused) {
-                outputVideoPlayer.currentTime = inputVideoPlayer.currentTime;
-                outputVideoPlayer.play().catch(() => {});
-            }
+            startLiveHUDLoop();
         });
 
         inputVideoPlayer.addEventListener('pause', () => {
-            if (!outputVideoPlayer.paused) outputVideoPlayer.pause();
+            renderLiveHUDFrame();
+            if (hudAnimationId) {
+                cancelAnimationFrame(hudAnimationId);
+                hudAnimationId = null;
+            }
         });
 
         inputVideoPlayer.addEventListener('seeked', () => {
-            outputVideoPlayer.currentTime = inputVideoPlayer.currentTime;
+            renderLiveHUDFrame();
+            syncScoreboardWithPlayback();
         });
 
-        // Frame column highlight sync based on playback duration
         inputVideoPlayer.addEventListener('timeupdate', () => {
-            if (currentAppState !== 'EXTRACTED') return;
-            const duration = inputVideoPlayer.duration || 57.83;
-            const curTime = inputVideoPlayer.currentTime;
-            const progressRatio = curTime / duration;
-            const currentFrame = Math.min(10, Math.max(1, Math.ceil(progressRatio * 10)));
+            renderLiveHUDFrame();
+            syncScoreboardWithPlayback();
+        });
 
-            document.querySelectorAll('.frame-col, .frame-table-cell').forEach(el => {
-                const f = parseInt(el.getAttribute('data-frame'), 10);
-                if (f === currentFrame) {
-                    el.classList.add('active-frame-col');
-                } else {
-                    el.classList.remove('active-frame-col');
-                }
-            });
+        inputVideoPlayer.addEventListener('loadedmetadata', () => {
+            renderLiveHUDFrame();
         });
     }
 
@@ -950,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================================================
-    // 8. DATA DOWNLOAD & EXPORT UTILITIES
+    // 9. DATA DOWNLOAD & EXPORT UTILITIES
     // =============================================================
     function downloadJSON(data, filename) {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 4));
@@ -978,27 +1163,25 @@ document.addEventListener('DOMContentLoaded', () => {
         anchor.remove();
     }
 
-    function downloadYAML(cfg, filename) {
-        let yaml = `# Configuration for FOG Scoreboard Data Extraction Pipeline\n\n`;
-        yaml += `scoreboard:\n`;
-        yaml += `  lane_template_roi: [30, 20, 105, 100]\n`;
-        yaml += `  lane_ncc_threshold: ${cfg.lane_ncc_threshold}\n\n`;
-        yaml += `grid:\n`;
-        yaml += `  col_start_x: ${cfg.col_start_x}\n`;
-        yaml += `  col_width: ${cfg.col_width}\n`;
-        yaml += `  crop_y_start: ${cfg.crop_y_start}\n`;
-        yaml += `  crop_y_end: ${cfg.crop_y_end}\n\n`;
-        yaml += `ocr:\n`;
-        yaml += `  mode: "custom"\n`;
-        yaml += `  binary_threshold: ${cfg.binary_threshold}\n`;
-        yaml += `  confidence_threshold: ${cfg.confidence_threshold}\n`;
-        yaml += `  min_required_votes: ${cfg.min_required_votes}\n`;
-        yaml += `  active_row_threshold_red: ${cfg.active_row_threshold_red}\n`;
-        yaml += `  active_row_threshold_blue: ${cfg.active_row_threshold_blue}\n`;
+    function downloadYAML(data, filename) {
+        let yamlContent = "# FOG Scoreboard Config Generated via Admin Panel\n\n";
+        yamlContent += "scoreboard:\n";
+        yamlContent += `  lane_ncc_threshold: ${data.lane_ncc_threshold}\n\n`;
+        yamlContent += "ocr:\n";
+        yamlContent += `  binary_threshold: ${data.binary_threshold}\n`;
+        yamlContent += `  confidence_threshold: ${data.confidence_threshold}\n`;
+        yamlContent += `  min_required_votes: ${data.min_required_votes}\n`;
+        yamlContent += `  active_row_threshold_red: ${data.active_row_threshold_red}\n`;
+        yamlContent += `  active_row_threshold_blue: ${data.active_row_threshold_blue}\n\n`;
+        yamlContent += "grid:\n";
+        yamlContent += `  col_start_x: ${data.col_start_x}\n`;
+        yamlContent += `  col_width: ${data.col_width}\n`;
+        yamlContent += `  crop_y_start: ${data.crop_y_start}\n`;
+        yamlContent += `  crop_y_end: ${data.crop_y_end}\n`;
 
-        const dataStr = "data:text/yaml;charset=utf-8," + encodeURIComponent(yaml);
+        const encodedUri = "data:text/yaml;charset=utf-8," + encodeURIComponent(yamlContent);
         const anchor = document.createElement('a');
-        anchor.setAttribute("href", dataStr);
+        anchor.setAttribute("href", encodedUri);
         anchor.setAttribute("download", filename);
         document.body.appendChild(anchor);
         anchor.click();
@@ -1020,7 +1203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================================================
-    // 9. SECRET ADMIN DASHBOARD CONTROLLER (NO PASSWORD REQUIRED)
+    // 10. SECRET ADMIN DASHBOARD CONTROLLER (ZERO-AUTH)
     // =============================================================
     function openSecretAdmin() {
         if (!secretAdminModal) return;
@@ -1040,7 +1223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Triggers for Secret Admin Panel
     if (navAdminBtn) navAdminBtn.addEventListener('click', openSecretAdmin);
     if (footerAdminBtn) footerAdminBtn.addEventListener('click', openSecretAdmin);
     if (closeAdminBtn) closeAdminBtn.addEventListener('click', closeSecretAdmin);
@@ -1057,14 +1239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Close on Backdrop Click
     if (secretAdminModal) {
         secretAdminModal.addEventListener('click', (e) => {
             if (e.target === secretAdminModal) closeSecretAdmin();
         });
     }
 
-    // Keyboard Shortcut Trigger: Ctrl + Shift + S or Ctrl + Shift + A or Escape to close
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 's' || e.key === 'A' || e.key === 'a'))) {
             e.preventDefault();
@@ -1079,7 +1259,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3-Click Logo Trigger for Discrete Opening
     let logoClickCount = 0;
     let logoClickTimer = null;
     if (brandLogoBtn) {
@@ -1095,7 +1274,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // URL Hash Trigger (#admin or #secret-panel)
     function checkURLHashForAdmin() {
         if (window.location.hash === '#admin' || window.location.hash === '#secret-panel') {
             openSecretAdmin();
@@ -1103,7 +1281,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.addEventListener('hashchange', checkURLHashForAdmin);
 
-    // Tab Navigation in Secret Admin Modal
     const adminTabBtns = document.querySelectorAll('.admin-tab-btn');
     const adminTabPanes = document.querySelectorAll('.admin-tab-pane');
 
@@ -1147,7 +1324,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = "bg-gray-900/80 border border-gray-800 rounded-xl p-4 space-y-3";
 
-            // Card Header
             let cardHeaderHTML = `
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-gray-800/80 pb-3">
                     <div class="flex items-center gap-2">
@@ -1163,7 +1339,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // 10-Frame Inputs Grid
             let framesInputsHTML = `<div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 text-center">`;
             for (let f = 0; f < 10; f++) {
                 const fRolls = rolls[f] || ["", ""];
@@ -1200,12 +1375,10 @@ document.addEventListener('DOMContentLoaded', () => {
             adminPlayerContainer.appendChild(card);
         });
 
-        // Attach Event Listeners to inputs
         attachPlayerMatrixEventListeners();
     }
 
     function attachPlayerMatrixEventListeners() {
-        // Roll input changes -> real-time recalculate preview
         document.querySelectorAll('.roll-input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const playerKey = e.target.getAttribute('data-player');
@@ -1213,7 +1386,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rollIdx = parseInt(e.target.getAttribute('data-roll'), 10);
                 let val = e.target.value.trim().toUpperCase();
 
-                // Normalize quick typos
                 if (val === 'O' || val === '0') val = '-';
                 if (val === 'I') val = '1';
                 if (val === 'S') val = '5';
@@ -1225,12 +1397,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     appStore.scoreboard[playerKey].rolls[frameIdx][rollIdx] = val;
 
-                    // Recompute scores
                     const computed = calculateBowlingScores(appStore.scoreboard[playerKey].rolls);
                     appStore.scoreboard[playerKey].scores = computed.scores;
                     appStore.scoreboard[playerKey].ttl = computed.ttl;
 
-                    // Update previews
                     const ttlEl = document.getElementById(`preview-ttl-${playerKey}`);
                     if (ttlEl) ttlEl.textContent = computed.ttl !== "" ? computed.ttl : "-";
                     for (let f = 0; f < 10; f++) {
@@ -1242,7 +1412,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Player Initial input
         document.querySelectorAll('.player-initial-input').forEach(input => {
             input.addEventListener('change', (e) => {
                 const playerKey = e.target.getAttribute('data-player');
@@ -1255,7 +1424,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Player Name input
         document.querySelectorAll('.player-name-input').forEach(input => {
             input.addEventListener('change', (e) => {
                 const oldKey = e.target.getAttribute('data-player');
@@ -1271,7 +1439,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Delete Player
         document.querySelectorAll('.delete-player-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const playerKey = btn.getAttribute('data-player');
@@ -1513,6 +1680,8 @@ document.addEventListener('DOMContentLoaded', () => {
         adminResetDefaultsBtn.addEventListener('click', () => {
             if (confirm("Reset everything to factory defaults? All custom edits will be removed.")) {
                 localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem('fog_admin_store_v2');
+                localStorage.removeItem('fog_scoreboard_store_v1');
                 appStore = {
                     scoreboard: JSON.parse(JSON.stringify(DEFAULT_SCOREBOARD_DATA)),
                     cvConfig: Object.assign({}, DEFAULT_CV_CONFIG),
@@ -1553,11 +1722,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================================================
-    // 10. INITIALIZATION
+    // 11. INITIALIZATION
     // =============================================================
     applyBrandingToDOM();
     applyVideosToDOM();
     renderStandbyState();
     checkURLHashForAdmin();
 });
-

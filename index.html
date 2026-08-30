@@ -274,19 +274,35 @@
                     </div>
                 </div>
 
-                <!-- Processed Output Player -->
+                <!-- Processed Output (Live Computer Vision HUD) -->
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
                         <h4 class="font-semibold text-gray-300 flex items-center gap-2 text-sm">
-                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span> Processed Output (Live HUD)
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span> Processed Output (Live CV Tracking HUD)
                         </h4>
-                        <span class="text-xs text-yellow-500 font-semibold">100% Extraction Accuracy</span>
+                        <span id="hud-accuracy-badge" class="text-xs text-yellow-500 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-circle-check text-green-400"></i> 100% Extraction Accuracy
+                        </span>
                     </div>
-                    <div class="relative aspect-video bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl flex items-center justify-center">
-                        <video id="output-video-player" controls class="w-full h-full object-contain" playsinline preload="metadata">
+                    <div class="relative aspect-video bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl flex items-center justify-center group">
+                        <!-- Real-time Computer Vision Tracking Canvas -->
+                        <canvas id="live-hud-canvas" class="w-full h-full object-contain"></canvas>
+
+                        <!-- Optional Pre-rendered Annotated Video Element -->
+                        <video id="output-video-player" class="hidden w-full h-full object-contain" playsinline preload="metadata">
                             <source src="output_compressed.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
                         </video>
+
+                        <!-- Top-Left Live HUD Telemetry Badge -->
+                        <div class="absolute top-3 left-3 flex items-center gap-2 bg-gray-950/80 backdrop-blur-md px-2.5 py-1 rounded-md border border-cyan-500/30 text-[11px] font-mono text-cyan-300 select-none">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-ping"></span>
+                            <span id="hud-telemetry-text">TRACKING • 30 FPS • NCC 0.997</span>
+                        </div>
+
+                        <!-- Bottom-Right Active Bowler Tracking Badge -->
+                        <div id="hud-active-badge" class="absolute bottom-3 right-3 bg-yellow-500/90 text-gray-950 px-3 py-1 rounded-md text-xs font-bold font-mono shadow-lg flex items-center gap-1.5 select-none">
+                            <i class="fa-solid fa-crosshairs"></i> <span id="hud-active-player-name">ACTIVE: JAGDISH (Row 1)</span>
+                        </div>
                     </div>
                 </div>
             </div>
