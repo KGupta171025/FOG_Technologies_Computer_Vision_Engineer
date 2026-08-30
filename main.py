@@ -90,17 +90,36 @@ def main():
     template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", "template_lane.png")
     templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 
+    # Reconfigure stdout to utf-8 if possible
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     # 2. Instantiate and execute the pipeline
     processor = VideoProcessor(config, template_path, templates_dir)
 
-    print("Running video inspection...")
-    metadata = processor.inspect_video(input_path)
-    print("Video Metadata:")
-    print(f"  - Resolution: {metadata['resolution']}")
-    print(f"  - FPS: {metadata['fps']:.2f}")
-    print(f"  - Total Frames: {metadata['total_frames']}")
-    print(f"  - Duration: {metadata['duration_seconds']:.2f} seconds")
+    print("\n" + "=" * 65)
+    print("  FOG TECHNOLOGIES - BOWLING SCOREBOARD EXTRACTION PIPELINE")
+    print("=" * 65)
+    print("Pipeline Workflow:")
+    print("  [1] Open Video & Inspect Stream Headers")
+    print("  [2] Read Video Frame-by-Frame (Interval Sampling)")
+    print("  [3] Locate Scoreboard Region via NCC Landmark Matching")
+    print("  [4] Preprocess Scoreboard ROI & Invert Active Player Rows")
+    print("  [5] OCR Symbol Recognition & Character Classification")
+    print("  [6] Clean, Validate, and Structure 10-Frame Bowling Scoreboard")
+    print("=" * 65)
 
+    print("\n[Step 1/6] Opening video & inspecting stream...")
+    metadata = processor.inspect_video(input_path)
+    print(f"  [+] Video Resolution : {metadata['resolution']}")
+    print(f"  [+] Stream Framerate  : {metadata['fps']:.2f} FPS")
+    print(f"  [+] Total Frame Count : {metadata['total_frames']} frames")
+    print(f"  [+] Video Duration    : {metadata['duration_seconds']:.2f} seconds")
+
+    print("\n[Step 2-5/6] Processing frames, locating scoreboard, OCR extraction & temporal voting...")
     try:
         video_out, csv_out, json_out = processor.process(
             video_path=input_path,
@@ -109,13 +128,38 @@ def main():
             confidence_threshold=args.confidence_threshold,
             debug=args.debug
         )
-        print("\nProcessing completed successfully!")
-        print("Outputs generated:")
-        print(f"  - Annotated Video: {video_out}")
-        print(f"  - CSV Audit Data: {csv_out}")
-        print(f"  - JSON Scoreboard: {json_out}")
+        print("\n[Step 6/6] Pipeline Execution Completed Successfully!")
+        print("\n" + "=" * 65)
+        print("  EXTRACTED FINAL SCOREBOARD DATA")
+        print("=" * 65)
+
+        # Print formatted terminal scoreboard table
+        import json
+        if os.path.exists(json_out):
+            with open(json_out, "r", encoding="utf-8") as f:
+                sb_data = json.load(f)
+
+            header = f"{'PLAYER':<10} | " + " | ".join([f"F{i+1:>2}" for i in range(10)]) + " | TTL"
+            print(header)
+            print("-" * len(header))
+            for player, pdata in sb_data.items():
+                rolls_str = []
+                for f_idx, frame_rolls in enumerate(pdata.get("rolls", [])):
+                    r_str = "".join([r if r else " " for r in frame_rolls])
+                    rolls_str.append(f"{r_str:^3}")
+                ttl_val = pdata.get("ttl", "-")
+                row_str = f"{player:<10} | " + " | ".join(rolls_str) + f" | {ttl_val:>3}"
+                print(row_str)
+            print("-" * len(header))
+
+        print("\nGenerated Artifacts & Export Files:")
+        print(f"  [OK] Annotated Video Output : {video_out}")
+        print(f"  [OK] CSV Frame Audit Log    : {csv_out}")
+        print(f"  [OK] JSON Structured Data   : {json_out}")
+        print("=" * 65 + "\n")
+
     except Exception as e:
-        print(f"Pipeline error occurred: {e}", file=sys.stderr)
+        print(f"\n[ERR] Pipeline error occurred: {e}", file=sys.stderr)
         sys.exit(1)
 
 

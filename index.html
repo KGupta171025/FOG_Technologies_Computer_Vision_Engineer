@@ -15,16 +15,22 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
     <!-- Navbar -->
-    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <span class="text-yellow-500 font-bold text-xl tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-bowling-ball"></i> FOG TECHNOLOGIES
+                <div class="flex items-center gap-3">
+                    <span id="brand-logo-btn" class="text-yellow-500 font-bold text-xl tracking-wider flex items-center gap-2 cursor-pointer select-none" title="FOG Technologies Dashboard">
+                        <i class="fa-solid fa-bowling-ball text-yellow-400"></i> <span id="brand-title">FOG TECHNOLOGIES</span>
                     </span>
                 </div>
-                <div class="text-sm font-semibold text-gray-400 flex items-center gap-4">
-                    <span class="hidden sm:inline">CV Engineer Assessment: Scoreboard Data Extraction</span>
+                <div class="text-sm font-semibold text-gray-400 flex items-center gap-3">
+                    <span id="nav-subtitle" class="hidden md:inline">CV Engineer Assessment: Scoreboard Data Extraction</span>
+                    
+                    <!-- Secret Admin Panel Trigger Button (No Login Required) -->
+                    <button type="button" id="nav-admin-btn" class="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Secret Management Dashboard (Shortcut: Ctrl+Shift+S)">
+                        <i class="fa-solid fa-sliders"></i> <span>Admin Panel</span>
+                    </button>
+
                     <a href="https://github.com/KGupta171025/FOG_TECHNOLOGIES_COMPUTER_VISION_ENGINEER" target="_blank" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
                         <i class="fa-brands fa-github"></i> GitHub Repo
                     </a>
@@ -42,13 +48,13 @@
                 <i class="fa-solid fa-bowling-ball text-9xl -mr-10 -mb-10 text-white"></i>
             </div>
             <div class="relative z-10 space-y-4 max-w-3xl">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/25">
+                <span id="hero-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/25">
                     Interactive Video Dashboard
                 </span>
-                <h1 class="text-4xl font-extrabold text-white leading-tight">
+                <h1 id="hero-title" class="text-4xl font-extrabold text-white leading-tight">
                     Bowling Scoreboard Data Extraction
                 </h1>
-                <p class="text-lg text-gray-300">
+                <p id="hero-desc" class="text-lg text-gray-300">
                     A complete Computer Vision solution to automatically track and extract scoreboard data from bowling video feeds. 
                     Upload your own video or test sample clips with real-time OCR, temporal filtering, and structured scoring.
                 </p>
@@ -59,7 +65,7 @@
                     <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
                         <i class="fa-solid fa-microchip text-yellow-400"></i> Template Matching + EasyOCR
                     </span>
-                    <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
+                    <span id="accuracy-badge" class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2 text-green-400 font-semibold">
                         <i class="fa-solid fa-circle-check text-green-400"></i> 100% Extraction Accuracy
                     </span>
                 </div>
@@ -76,11 +82,11 @@
                     <p class="text-sm text-gray-400">Add or upload a video file to run the CV extraction pipeline</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
-                    <!-- Native Accessible File Input (clipped instead of display:none for reliable browser triggering) -->
+                    <!-- Native Accessible File Input -->
                     <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,.mp4,.webm,.mov,.avi,.mkv" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">
                     
-                    <!-- Native Label Button for 100% Reliable Click to File Browser -->
-                    <label for="video-file-input" id="add-video-btn" class="cursor-pointer bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-yellow-500/20 flex items-center gap-2 select-none">
+                    <!-- Native Label Button for File Browser -->
+                    <label for="video-file-input" id="add-video-btn" class="cursor-pointer bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-4 py-2.5 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-yellow-500/20 flex items-center gap-2 select-none">
                         <i class="fa-solid fa-plus-circle text-base"></i> Add / Insert Video
                     </label>
 
@@ -88,21 +94,53 @@
                     <button id="process-video-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-indigo-600/20 flex items-center gap-2">
                         <i class="fa-solid fa-play text-base"></i> Run Extraction Pipeline
                     </button>
+
+                    <!-- Quick Load Sample Data -->
+                    <button id="quick-load-btn" class="bg-gray-800 hover:bg-gray-700 text-yellow-400 border border-gray-700 px-3.5 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-1.5" title="Instantly load extracted scoreboard metrics without waiting for animation">
+                        <i class="fa-solid fa-bolt"></i> Quick Load
+                    </button>
+
+                    <!-- Reset Feed Button -->
+                    <button id="reset-feed-btn" class="bg-gray-800 hover:bg-red-900/40 text-gray-400 hover:text-red-400 border border-gray-700 hover:border-red-500/30 px-3 py-2.5 rounded-xl font-semibold text-xs transition flex items-center gap-1.5" title="Reset video and return to standby state">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
                 </div>
             </div>
 
             <!-- Upload Area & Source Selector Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Dropzone Label Card for Direct Native File Selection on Click -->
-                <label for="video-file-input" id="dropzone" class="lg:col-span-2 border-2 border-dashed border-gray-700 hover:border-yellow-500/60 bg-gray-900/40 rounded-xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition group select-none">
-                    <div class="w-16 h-16 rounded-full bg-gray-800 group-hover:bg-yellow-500/10 text-gray-400 group-hover:text-yellow-400 flex items-center justify-center text-2xl mb-3 transition">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                <label for="video-file-input" id="dropzone" class="lg:col-span-2 border-2 border-dashed border-gray-700 hover:border-yellow-500/60 bg-gray-900/40 rounded-xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition group select-none relative overflow-hidden">
+                    <!-- Default Initial State -->
+                    <div id="dropzone-default-view" class="flex flex-col items-center justify-center">
+                        <div class="w-16 h-16 rounded-full bg-gray-800 group-hover:bg-yellow-500/10 text-gray-400 group-hover:text-yellow-400 flex items-center justify-center text-2xl mb-3 transition">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">Click to Browse or Drag & Drop Video File</h3>
+                        <p class="text-xs text-gray-400 mb-3">Supports MP4, WebM, QuickTime (.mov), AVI, MKV (Max 500MB)</p>
+                        <span class="text-xs font-semibold px-3 py-1 bg-gray-800 text-yellow-400 rounded-full border border-gray-700">
+                            Selected: <span id="current-video-name">input_compressed.mp4 (Default Sample)</span>
+                        </span>
                     </div>
-                    <h3 class="text-base font-bold text-white mb-1">Click to Browse or Drag & Drop Video File</h3>
-                    <p class="text-xs text-gray-400 mb-3">Supports MP4, WebM, QuickTime (.mov), AVI, MKV (Max 500MB)</p>
-                    <span class="text-xs font-semibold px-3 py-1 bg-gray-800 text-yellow-400 rounded-full border border-gray-700">
-                        Selected: <span id="current-video-name">input_compressed.mp4 (Default Sample)</span>
-                    </span>
+
+                    <!-- Loaded Video State (Revealed when a video is selected) -->
+                    <div id="dropzone-loaded-view" class="hidden flex-col items-center justify-center text-center space-y-3 py-2">
+                        <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-3xl border border-green-500/40 shadow-lg shadow-green-500/10 animate-bounce">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <h3 id="loaded-video-title" class="text-lg font-bold text-white">Video Successfully Loaded & Selected!</h3>
+                            <p id="loaded-video-desc" class="text-xs text-green-400 font-medium">Ready for Computer Vision extraction</p>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
+                            <button type="button" id="dropzone-run-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition flex items-center gap-2">
+                                <i class="fa-solid fa-play"></i> Run Extraction Pipeline
+                            </button>
+                            <span class="text-xs text-gray-400 hover:text-white underline font-medium">
+                                <i class="fa-solid fa-file-arrow-up"></i> Choose Different Video
+                            </span>
+                        </div>
+                    </div>
                 </label>
 
                 <!-- Video Metadata & Sample Selector Card -->
@@ -149,8 +187,8 @@
                     <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-diagram-project text-yellow-500"></i> Computer Vision Processing Flowchart
                     </h4>
-                    <span id="pipeline-status-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                        Ready
+                    <span id="pipeline-status-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                        Standby (Awaiting Execution)
                     </span>
                 </div>
                 
@@ -170,23 +208,23 @@
                     </div>
                     <div id="flow-step-4" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
                         <div class="text-base mb-1 text-pink-400"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                        <div class="text-xs font-bold text-white">4. Preprocess image</div>
+                        <div class="text-xs font-bold text-white">4. Preprocess scoreboard image</div>
                     </div>
                     <div id="flow-step-5" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
                         <div class="text-base mb-1 text-amber-400"><i class="fa-solid fa-font"></i></div>
-                        <div class="text-xs font-bold text-white">5. OCR extraction</div>
+                        <div class="text-xs font-bold text-white">5. OCR text extraction</div>
                     </div>
                     <div id="flow-step-6" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
                         <div class="text-base mb-1 text-teal-400"><i class="fa-solid fa-filter"></i></div>
-                        <div class="text-xs font-bold text-white">6. Clean & validate</div>
+                        <div class="text-xs font-bold text-white">6. Clean and validate text</div>
                     </div>
                     <div id="flow-step-7" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
                         <div class="text-base mb-1 text-emerald-400"><i class="fa-solid fa-table-list"></i></div>
-                        <div class="text-xs font-bold text-white">7. Structured data</div>
+                        <div class="text-xs font-bold text-white">7. Structured scoreboard data</div>
                     </div>
                     <div id="flow-step-8" class="flow-step bg-gray-900 border border-gray-800 rounded-lg p-2.5 transition">
                         <div class="text-base mb-1 text-green-400"><i class="fa-solid fa-file-export"></i></div>
-                        <div class="text-xs font-bold text-white">8. CSV / JSON output</div>
+                        <div class="text-xs font-bold text-white">8. CSV, JSON or screen output</div>
                     </div>
                 </div>
 
@@ -210,7 +248,7 @@
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-play-circle text-yellow-500"></i> Video Feed & CV Tracking HUD
                     </h2>
-                    <p class="text-sm text-gray-400">Real-time side-by-side feed comparison</p>
+                    <p class="text-sm text-gray-400">Real-time side-by-side feed comparison with playback synchronization</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" id="sync-play-btn" class="bg-gray-800 hover:bg-gray-700 text-yellow-400 px-3.5 py-1.5 rounded-lg border border-gray-700 text-xs font-semibold transition flex items-center gap-1.5">
@@ -261,7 +299,7 @@
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-table text-yellow-500"></i> Extracted Structured Scoreboard
                     </h2>
-                    <p class="text-sm text-gray-400">Values stabilized via temporal majority voting</p>
+                    <p id="scoreboard-status-desc" class="text-sm text-gray-400">Values extracted from video feed & stabilized via temporal majority voting</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" id="download-json-btn" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3.5 py-2 rounded-lg border border-gray-700 text-xs font-semibold transition flex items-center gap-1.5">
@@ -283,26 +321,21 @@
                         <tr class="bg-gray-900 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-800">
                             <th class="py-4 px-6 text-left w-48">Player Name</th>
                             <!-- Columns 1 to 10 -->
-                            <th class="border-l border-gray-800 w-24">1</th>
-                            <th class="border-l border-gray-800 w-24">2</th>
-                            <th class="border-l border-gray-800 w-24">3</th>
-                            <th class="border-l border-gray-800 w-24">4</th>
-                            <th class="border-l border-gray-800 w-24">5</th>
-                            <th class="border-l border-gray-800 w-24">6</th>
-                            <th class="border-l border-gray-800 w-24">7</th>
-                            <th class="border-l border-gray-800 w-24">8</th>
-                            <th class="border-l border-gray-800 w-24">9</th>
-                            <th class="border-l border-gray-800 w-28">10</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="1">1</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="2">2</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="3">3</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="4">4</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="5">5</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="6">6</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="7">7</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="8">8</th>
+                            <th class="border-l border-gray-800 w-24 frame-col" data-frame="9">9</th>
+                            <th class="border-l border-gray-800 w-28 frame-col" data-frame="10">10</th>
                             <th class="border-l border-gray-800 w-28 bg-gray-900/50 text-yellow-500">Total (TTL)</th>
                         </tr>
                     </thead>
                     <tbody id="scoreboard-body" class="divide-y divide-gray-800">
-                        <!-- Loading State -->
-                        <tr>
-                            <td colspan="12" class="py-12 text-gray-500 text-lg">
-                                <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading scoreboard data...
-                            </td>
-                        </tr>
+                        <!-- Default Standby Initial State (Populated dynamically) -->
                     </tbody>
                 </table>
             </div>
@@ -314,7 +347,7 @@
                 <h3 class="text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-bar text-yellow-500"></i> Total Score Summary
                 </h3>
-                <div class="h-64 relative">
+                <div class="h-64 relative flex items-center justify-center" id="scores-chart-container">
                     <canvas id="scores-chart"></canvas>
                 </div>
             </div>
@@ -322,7 +355,7 @@
                 <h3 class="text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-bullseye text-yellow-500"></i> Roll Type Distribution (Strikes vs Spares)
                 </h3>
-                <div class="h-64 relative">
+                <div class="h-64 relative flex items-center justify-center" id="rolls-chart-container">
                     <canvas id="rolls-chart"></canvas>
                 </div>
             </div>
@@ -372,11 +405,348 @@
 
     <!-- Footer -->
     <footer class="bg-gray-950 border-t border-gray-800 py-8 mt-12 text-center text-gray-500 text-sm">
-        <p>&copy; 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.</p>
-        <p class="mt-2 text-xs text-gray-600">Built with Python, OpenCV, Tailwind, and Chart.js</p>
+        <p id="footer-copyright">&copy; 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.</p>
+        <p id="footer-tagline" class="mt-2 text-xs text-gray-600">Built with Python, OpenCV, Tailwind, and Chart.js</p>
+        <div class="mt-4 flex items-center justify-center gap-3">
+            <button type="button" id="footer-admin-btn" class="bg-gray-900 hover:bg-yellow-500/20 text-yellow-500/80 hover:text-yellow-400 border border-gray-800 hover:border-yellow-500/40 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-key text-xs"></i> <span>Secret Admin Dashboard</span>
+            </button>
+        </div>
     </footer>
 
+    <!-- ========================================================================= -->
+    <!-- SECRET ADMIN MANAGEMENT DASHBOARD MODAL (Zero-Auth / No Password Needed) -->
+    <!-- ========================================================================= -->
+    <div id="secret-admin-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-6 md:p-8 secret-modal-backdrop">
+        <div class="bg-gray-950 border border-gray-700/80 rounded-2xl w-full max-w-6xl overflow-hidden shadow-2xl flex flex-col secret-modal-content">
+            
+            <!-- Modal Header -->
+            <div class="bg-gray-900/90 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-bold text-white">Secret Management Dashboard</h3>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/25">
+                                Zero-Auth Active
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400">Live Website & Computer Vision Pipeline Controller (Shortcut: <kbd class="px-1 py-0.5 bg-gray-800 rounded text-yellow-400 font-mono">Ctrl+Shift+S</kbd>)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="close-admin-btn" class="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition text-lg" title="Close Panel (Esc)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="bg-gray-900/60 border-b border-gray-800 px-6 py-2 flex flex-wrap gap-2">
+                <button type="button" class="admin-tab-btn active px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2" data-tab="tab-players">
+                    <i class="fa-solid fa-users"></i> Scoreboard & Players
+                </button>
+                <button type="button" class="admin-tab-btn px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2" data-tab="tab-videos">
+                    <i class="fa-solid fa-video"></i> Video Sources & Meta
+                </button>
+                <button type="button" class="admin-tab-btn px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2" data-tab="tab-cvconfig">
+                    <i class="fa-solid fa-microchip"></i> CV & OCR Config
+                </button>
+                <button type="button" class="admin-tab-btn px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2" data-tab="tab-branding">
+                    <i class="fa-solid fa-palette"></i> Branding & Content
+                </button>
+                <button type="button" class="admin-tab-btn px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2" data-tab="tab-persistence">
+                    <i class="fa-solid fa-database"></i> Persistence & Export
+                </button>
+            </div>
+
+            <!-- Modal Tab Content Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1 bg-gray-950/90 text-sm">
+                
+                <!-- ------------------------------------------------------------- -->
+                <!-- TAB 1: SCOREBOARD & PLAYERS MATRIX EDITOR -->
+                <!-- ------------------------------------------------------------- -->
+                <div id="tab-players" class="admin-tab-pane space-y-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-800 pb-4">
+                        <div>
+                            <h4 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-table-cells text-yellow-500"></i> Interactive Score & Roll Matrix Editor
+                            </h4>
+                            <p class="text-xs text-gray-400">Edit player names, roll symbols (<code class="text-yellow-400">X</code>, <code class="text-blue-400">/</code>, <code class="text-gray-400">-</code>, <code class="text-green-400">0-9</code>), and auto-calculate bowling scores</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="admin-auto-calc-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+                                <i class="fa-solid fa-calculator"></i> Auto-Calculate Scores
+                            </button>
+                            <button type="button" id="admin-add-player-btn" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+                                <i class="fa-solid fa-user-plus"></i> Add Player
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Player Score Edit Cards Container -->
+                    <div id="admin-players-matrix-container" class="space-y-4">
+                        <!-- Rendered dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- ------------------------------------------------------------- -->
+                <!-- TAB 2: VIDEO SOURCES & METADATA -->
+                <!-- ------------------------------------------------------------- -->
+                <div id="tab-videos" class="admin-tab-pane hidden space-y-6">
+                    <div class="border-b border-gray-800 pb-4">
+                        <h4 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-video text-yellow-500"></i> Video Feed Paths & Metadata Configuration
+                        </h4>
+                        <p class="text-xs text-gray-400">Configure default video feed sources, preview links, and hardware metrics</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4 bg-gray-900/60 p-5 rounded-xl border border-gray-800">
+                            <h5 class="text-xs font-bold uppercase tracking-wider text-yellow-500 flex items-center gap-2">
+                                <i class="fa-solid fa-link"></i> Video URLs / Paths
+                            </h5>
+                            
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Input Video URL / Path:</label>
+                                <input type="text" id="admin-input-video-url" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:border-yellow-500 focus:outline-none" value="input_compressed.mp4">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Processed Output Video URL / Path:</label>
+                                <input type="text" id="admin-output-video-url" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:border-yellow-500 focus:outline-none" value="output_compressed.mp4">
+                            </div>
+
+                            <button type="button" id="admin-apply-videos-btn" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-check"></i> Apply Video Sources
+                            </button>
+                        </div>
+
+                        <div class="space-y-4 bg-gray-900/60 p-5 rounded-xl border border-gray-800">
+                            <h5 class="text-xs font-bold uppercase tracking-wider text-yellow-500 flex items-center gap-2">
+                                <i class="fa-solid fa-tags"></i> Video Metadata Labels
+                            </h5>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-300 mb-1">Resolution:</label>
+                                    <input type="text" id="admin-meta-res" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:border-yellow-500 focus:outline-none" value="1280 x 720 (HD)">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-300 mb-1">Duration:</label>
+                                    <input type="text" id="admin-meta-dur" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:border-yellow-500 focus:outline-none" value="57.83 seconds">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-300 mb-1">File Size:</label>
+                                    <input type="text" id="admin-meta-size" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:border-yellow-500 focus:outline-none" value="11.15 MB">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-300 mb-1">Status Label:</label>
+                                    <input type="text" id="admin-meta-status" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:border-yellow-500 focus:outline-none" value="Stationary (NCC > 0.96)">
+                                </div>
+                            </div>
+
+                            <button type="button" id="admin-apply-meta-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-save"></i> Update Metadata Labels
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ------------------------------------------------------------- -->
+                <!-- TAB 3: CV & OCR PARAMETERS -->
+                <!-- ------------------------------------------------------------- -->
+                <div id="tab-cvconfig" class="admin-tab-pane hidden space-y-6">
+                    <div class="border-b border-gray-800 pb-4">
+                        <h4 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-microchip text-yellow-500"></i> Computer Vision & OCR Pipeline Parameters
+                        </h4>
+                        <p class="text-xs text-gray-400">Tune detection thresholds, OCR engine modes, and grid bounding box coordinates</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800 space-y-3">
+                            <h5 class="text-xs font-bold uppercase text-yellow-500">Detection & OCR</h5>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Lane NCC Threshold:</label>
+                                <input type="number" step="0.01" id="cfg-lane-ncc" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="0.96">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Binary Threshold:</label>
+                                <input type="number" id="cfg-bin-thresh" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="150">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">OCR Confidence:</label>
+                                <input type="number" step="0.01" id="cfg-ocr-conf" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="0.82">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Min Required Votes:</label>
+                                <input type="number" id="cfg-min-votes" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="5">
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800 space-y-3">
+                            <h5 class="text-xs font-bold uppercase text-yellow-500">Grid Coordinates</h5>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Col Start X (px):</label>
+                                <input type="number" id="cfg-col-start" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="270">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Col Width (px):</label>
+                                <input type="number" id="cfg-col-width" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="154">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Crop Y Start (px):</label>
+                                <input type="number" id="cfg-crop-ystart" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="20">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Crop Y End (px):</label>
+                                <input type="number" id="cfg-crop-yend" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="43">
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800 space-y-3">
+                            <h5 class="text-xs font-bold uppercase text-yellow-500">Color Thresholds & Actions</h5>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Active Row Red Thresh:</label>
+                                <input type="number" id="cfg-act-red" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="180">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Active Row Blue Thresh:</label>
+                                <input type="number" id="cfg-act-blue" class="w-full bg-gray-950 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="100">
+                            </div>
+                            <div class="pt-3 space-y-2">
+                                <button type="button" id="admin-save-config-btn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold py-2 rounded text-xs transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Parameters
+                                </button>
+                                <button type="button" id="admin-export-yaml-btn" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-200 py-1.5 rounded text-xs transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Export config.yaml
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ------------------------------------------------------------- -->
+                <!-- TAB 4: BRANDING & CONTENT -->
+                <!-- ------------------------------------------------------------- -->
+                <div id="tab-branding" class="admin-tab-pane hidden space-y-6">
+                    <div class="border-b border-gray-800 pb-4">
+                        <h4 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-palette text-yellow-500"></i> Website Text & Branding Configuration
+                        </h4>
+                        <p class="text-xs text-gray-400">Live customization of titles, descriptions, headers, and footer details</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gray-900/60 p-5 rounded-xl border border-gray-800">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Brand Title (Navbar):</label>
+                            <input type="text" id="admin-brand-title" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="FOG TECHNOLOGIES">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Navbar Subtitle:</label>
+                            <input type="text" id="admin-nav-subtitle" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="CV Engineer Assessment: Scoreboard Data Extraction">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Hero Badge Text:</label>
+                            <input type="text" id="admin-hero-badge" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="Interactive Video Dashboard">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Accuracy Badge Text:</label>
+                            <input type="text" id="admin-accuracy-badge" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="100% Extraction Accuracy">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Hero Main Title:</label>
+                            <input type="text" id="admin-hero-title" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="Bowling Scoreboard Data Extraction">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Hero Description:</label>
+                            <textarea id="admin-hero-desc" rows="3" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">A complete Computer Vision solution to automatically track and extract scoreboard data from bowling video feeds. Upload your own video or test sample clips with real-time OCR, temporal filtering, and structured scoring.</textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Footer Copyright Text:</label>
+                            <input type="text" id="admin-footer-copyright" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="&copy; 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.">
+                        </div>
+                    </div>
+
+                    <button type="button" id="admin-save-branding-btn" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold px-5 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-check"></i> Apply Live Branding Changes
+                    </button>
+                </div>
+
+                <!-- ------------------------------------------------------------- -->
+                <!-- TAB 5: PERSISTENCE & EXPORT -->
+                <!-- ------------------------------------------------------------- -->
+                <div id="tab-persistence" class="admin-tab-pane hidden space-y-6">
+                    <div class="border-b border-gray-800 pb-4">
+                        <h4 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-database text-yellow-500"></i> Data Portability, Backup & Code Synchronization
+                        </h4>
+                        <p class="text-xs text-gray-400">Save edits to browser LocalStorage, import/export JSON, and sync back to repository</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-900/60 p-5 rounded-xl border border-gray-800 space-y-4">
+                            <h5 class="text-xs font-bold uppercase tracking-wider text-yellow-500 flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> Quick Actions & Persistence
+                            </h5>
+                            <p class="text-xs text-gray-400">All edits in this secret panel are automatically synced to your browser's <code class="text-yellow-400">localStorage</code>, surviving page reloads.</p>
+
+                            <div class="flex flex-col gap-2.5 pt-2">
+                                <button type="button" id="admin-download-json-btn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-file-code"></i> Download Updated scoreboard_data.json
+                                </button>
+                                <button type="button" id="admin-download-csv-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-file-csv"></i> Download scoreboard_data.csv
+                                </button>
+                                <button type="button" id="admin-reset-defaults-btn" class="w-full bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/50 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-trash-arrow-up"></i> Reset Everything to Factory Defaults
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900/60 p-5 rounded-xl border border-gray-800 space-y-4">
+                            <h5 class="text-xs font-bold uppercase tracking-wider text-yellow-500 flex items-center gap-2">
+                                <i class="fa-solid fa-file-import"></i> Raw JSON Import & Live Editor
+                            </h5>
+                            <textarea id="admin-raw-json-editor" rows="7" class="w-full bg-gray-950 border border-gray-700 font-mono text-xs text-gray-300 rounded-lg p-3 focus:outline-none focus:border-yellow-500 custom-scrollbar" placeholder="Paste scoreboard JSON here..."></textarea>
+                            
+                            <div class="flex items-center justify-between gap-3">
+                                <button type="button" id="admin-format-json-btn" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-xs transition">
+                                    Format JSON
+                                </button>
+                                <button type="button" id="admin-apply-raw-json-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-1.5 rounded text-xs transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-upload"></i> Apply Raw JSON
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-gray-900/90 border-t border-gray-800 px-6 py-3.5 flex items-center justify-between text-xs text-gray-400">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span>Secret Admin Dashboard v2.0 • Zero Login Required</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" id="admin-apply-and-close-btn" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold px-4 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-check-double"></i> Save & Close
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="admin-toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
     <!-- App JS with Cache-Buster -->
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>

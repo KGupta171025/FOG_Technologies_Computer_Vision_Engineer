@@ -2,8 +2,8 @@
 .roll-box-container {
     display: flex;
     border-bottom: 1px solid #374151; /* gray-700 */
-    height: 30px;
-    line-height: 30px;
+    height: 32px;
+    line-height: 32px;
 }
 
 .roll-cell {
@@ -11,6 +11,7 @@
     font-size: 0.85rem;
     font-weight: 800;
     text-align: center;
+    transition: all 0.2s ease;
 }
 
 .roll-cell:not(:first-child) {
@@ -18,11 +19,12 @@
 }
 
 .score-cell {
-    height: 45px;
-    line-height: 45px;
-    font-size: 1.25rem;
+    height: 44px;
+    line-height: 44px;
+    font-size: 1.2rem;
     font-weight: 700;
     color: #10B981; /* green-500 */
+    transition: all 0.2s ease;
 }
 
 /* Custom table adjustments */
@@ -35,14 +37,14 @@ th, td {
 }
 
 td.player-name-cell {
-    padding: 1rem !important;
+    padding: 0.85rem 1.25rem !important;
     text-align: left;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
 }
 
 td.total-score-cell {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 800;
     color: #F59E0B; /* yellow-500 */
 }
@@ -78,4 +80,94 @@ td.total-score-cell {
 /* Transitions */
 .transition-all {
     transition: all 0.3s ease;
+}
+
+/* Standby Card Glow Animation */
+.standby-card {
+    background: radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95));
+}
+
+/* Active Video Playback Frame Column Highlight */
+.active-frame-col {
+    background-color: rgba(234, 179, 8, 0.12) !important;
+    outline: 2px solid rgba(234, 179, 8, 0.4);
+    outline-offset: -2px;
+}
+
+/* Secret Admin Modal Styles */
+.secret-modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
+}
+
+.secret-modal-content {
+    max-height: 90vh;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 35px rgba(234, 179, 8, 0.15);
+}
+
+/* Custom Scrollbar for Admin Panel */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #111827;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #EAB308;
+}
+
+/* Matrix Roll Inputs in Admin Panel */
+.roll-input {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    color: #F3F4F6;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 4px 2px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+.roll-input:focus {
+    outline: none;
+    border-color: #EAB308;
+    background-color: #111827;
+    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.2);
+}
+
+/* Admin Tabs */
+.admin-tab-btn.active {
+    background-color: #EAB308 !important;
+    color: #111827 !important;
+    font-weight: 700 !important;
+}
+.admin-tab-btn:not(.active) {
+    color: #9CA3AF;
+    background-color: #1F2937;
+}
+.admin-tab-btn:not(.active):hover {
+    color: #F3F4F6;
+    background-color: #374151;
+}
+
+/* Toast Notifications */
+.admin-toast {
+    animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes slideInToast {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

@@ -99,12 +99,18 @@ class VideoProcessor:
             frame_idx += 1
             timestamp = frame_idx / fps
 
+            # Normalize frame to reference 1080p resolution (1920x1080) for robust ROI mapping
+            if frame.shape[1] != 1920 or frame.shape[0] != 1080:
+                proc_frame = cv2.resize(frame, (1920, 1080))
+            else:
+                proc_frame = frame
+
             # 1. Check Scoreboard Visibility
-            visible, ncc_score = self.detector.is_scoreboard_visible(frame)
+            visible, ncc_score = self.detector.is_scoreboard_visible(proc_frame)
             active_player = None
 
             if visible:
-                active_player = self.detector.get_active_player(frame)
+                active_player = self.detector.get_active_player(proc_frame)
 
                 # Run character extraction on visible frames at intervals
                 if frame_idx % frame_interval == 0:
@@ -137,7 +143,7 @@ class VideoProcessor:
 
                             for roll_idx in range(num_rolls):
                                 wx_start, wx_end = windows[roll_idx]
-                                roi = frame[y1:y2, x_col + wx_start : x_col + wx_end]
+                                roi = proc_frame[y1:y2, x_col + wx_start : x_col + wx_end]
 
                                 # Gray and clean crop
                                 gray_roi = ImagePreprocessor.to_grayscale(roi)
@@ -195,7 +201,7 @@ class VideoProcessor:
                     if debug:
                         debug_dir = os.path.join(output_dir, "debug_frames")
                         ImagePreprocessor.save_debug_image(
-                            frame,
+                            proc_frame,
                             f"frame_{frame_idx:05d}_raw.jpg",
                             debug_dir
                         )
@@ -203,7 +209,7 @@ class VideoProcessor:
             # Write annotated frame to demo video
             current_state_dict = {pstate.name: {"rolls": pstate.rolls, "scores": pstate.scores, "ttl": pstate.ttl} for pstate in scoreboard_state.values()}
             annotated_frame = self.annotator.annotate_frame(
-                frame,
+                proc_frame,
                 current_state_dict,
                 active_player,
                 ncc_score,
