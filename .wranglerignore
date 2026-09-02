@@ -1,10 +1,26 @@
-# Cloudflare Workers Assets Ignore (Files > 25MB or non-web files)
+# Exclude Large Videos (>25MB)
 bowling_scoreboard.mp4
+output_demo.mp4
 output/annotated_video.mp4
-output/debug_frames/
-.venv/
-__pycache__/
-*.pyc
-.git/
-.github/
+output/debug_frames/**
 Krishna_Gupta_Scoreboard_Data_Extraction.mp4
+
+# Exclude virtual environments & dev tooling
+.venv/**
+.venv
+venv/**
+venv
+node_modules/**
+node_modules
+__pycache__/**
+__pycache__
+*.pyc
+.pytest_cache/**
+.pytest_cache
+.git/**
+.git
+.github/**
+.github
+tests/**
+templates/**
+src/**
