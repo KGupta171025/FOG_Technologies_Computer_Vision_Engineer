@@ -43,14 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const DEFAULT_BRANDING = {
-        brandTitle: "FOG TECHNOLOGIES",
-        navSubtitle: "CV Engineer Assessment: Scoreboard Data Extraction",
-        heroBadge: "Interactive Video Dashboard",
-        heroTitle: "Bowling Scoreboard Data Extraction",
-        heroDesc: "A complete Computer Vision solution to automatically track and extract scoreboard data from bowling video feeds. Upload your own video or test sample clips with real-time OCR, temporal filtering, and structured scoring.",
+        brandTitle: "ScoreVision AI",
+        navSubtitle: "Real-Time Computer Vision Scoreboard Extractor",
+        heroBadge: "ScoreVision AI Pipeline",
+        heroTitle: "ScoreVision AI: Bowling Scoreboard Data Extraction",
+        heroDesc: "A production-grade Computer Vision and OCR system to automatically track, detect, and extract live scoreboard metrics from bowling video feeds with real-time HUD overlays.",
         accuracyBadge: "100% Extraction Accuracy",
-        footerCopyright: "© 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.",
-        footerTagline: "Built with Python, OpenCV, Tailwind, and Chart.js"
+        footerCopyright: "© 2026 ScoreVision AI • Developed by Krishna Gupta. All rights reserved.",
+        footerTagline: "Built with Python, OpenCV, Tailwind, Chart.js & Computer Vision"
     };
 
     const DEFAULT_VIDEOS = {
