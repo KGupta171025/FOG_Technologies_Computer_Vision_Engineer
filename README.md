@@ -1,4 +1,4 @@
-# ScoreVision AI - Automated Bowling Scoreboard Data Extraction
+# Score Vision - AI (For: FOG Technologies) — Bowling Scoreboard Data Extraction
 
 A production-grade Computer Vision and OCR system to detect, extract, stabilize, and structure bowling scoreboard video feeds into clean JSON, CSV, and annotated video outputs.
 

@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScoreVision AI - Real-Time Computer Vision Scoreboard Extractor</title>
+    <title>Score Vision - AI | Bowling Scoreboard Data Extraction (For: FOG Technologies)</title>
+    <!-- Favicon (Circular Blue Application Icon) -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -19,12 +24,24 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
-                    <span id="brand-logo-btn" class="text-yellow-500 font-bold text-xl tracking-wider flex items-center gap-2 cursor-pointer select-none" title="ScoreVision AI Dashboard">
-                        <i class="fa-solid fa-bowling-ball text-yellow-400"></i> <span id="brand-title">ScoreVision AI</span>
+                    <span id="brand-logo-btn" class="flex items-center gap-3 cursor-pointer select-none group" title="Score Vision - AI Dashboard (Click 3 times for Admin Panel)">
+                        <!-- Circular Blue Application Icon -->
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 p-[2px] shadow-lg shadow-blue-500/25 group-hover:scale-105 transition">
+                            <div class="w-full h-full rounded-full bg-gray-950 flex items-center justify-center overflow-hidden">
+                                <img src="favicon.svg" alt="Score Vision - AI Icon" class="w-7 h-7 object-contain">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span id="brand-title" class="text-white font-extrabold text-lg tracking-wide group-hover:text-cyan-400 transition">Score Vision - AI</span>
+                                <span class="text-[10px] font-black uppercase bg-blue-500/20 text-cyan-400 border border-blue-500/30 px-1.5 py-0.5 rounded">v2.0</span>
+                            </div>
+                            <span id="brand-client" class="text-[11px] text-gray-400 font-medium block -mt-0.5">For: <strong class="text-yellow-400 font-semibold">FOG Technologies</strong></span>
+                        </div>
                     </span>
                 </div>
                 <div class="text-sm font-semibold text-gray-400 flex items-center gap-3">
-                    <span id="nav-subtitle" class="hidden md:inline">Real-Time Computer Vision Scoreboard Extractor</span>
+                    <span id="nav-subtitle" class="hidden md:inline">CV Engineer Assessment: Scoreboard Data Extraction</span>
                     
                     <!-- Secret Admin Panel Trigger Button (No Login Required) -->
                     <button type="button" id="nav-admin-btn" class="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Secret Management Dashboard (Shortcut: Ctrl+Shift+S)">
@@ -49,13 +66,14 @@
             </div>
             <div class="relative z-10 space-y-4 max-w-3xl">
                 <span id="hero-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/25">
-                    ScoreVision AI Pipeline
+                    Interactive Video Dashboard
                 </span>
                 <h1 id="hero-title" class="text-4xl font-extrabold text-white leading-tight">
-                    ScoreVision AI: Bowling Scoreboard Extraction
+                    Bowling Scoreboard Data Extraction
                 </h1>
                 <p id="hero-desc" class="text-lg text-gray-300">
-                    A production-grade Computer Vision and OCR system to automatically track, detect, and extract live scoreboard data from bowling video feeds with real-time HUD overlays.
+                    A complete Computer Vision solution to automatically track and extract scoreboard data from bowling video feeds. 
+                    Upload your own video or test sample clips with real-time OCR, temporal filtering, and structured scoring.
                 </p>
                 <div class="flex flex-wrap gap-4 pt-2">
                     <span class="text-sm bg-gray-900/60 backdrop-blur px-3 py-2 rounded-lg border border-gray-700 flex items-center gap-2">
@@ -658,10 +676,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gray-900/60 p-5 rounded-xl border border-gray-800">
                         <div>
                             <label class="block text-xs font-semibold text-gray-300 mb-1">Brand Title (Navbar):</label>
-                            <input type="text" id="admin-brand-title" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="FOG TECHNOLOGIES">
+                            <input type="text" id="admin-brand-title" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="Score Vision - AI">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-300 mb-1">Navbar Subtitle:</label>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Brand Target / Client Subtitle:</label>
+                            <input type="text" id="admin-brand-client" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="For: FOG Technologies">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Navbar Right Subtitle:</label>
                             <input type="text" id="admin-nav-subtitle" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="CV Engineer Assessment: Scoreboard Data Extraction">
                         </div>
                         <div>
@@ -672,7 +694,7 @@
                             <label class="block text-xs font-semibold text-gray-300 mb-1">Accuracy Badge Text:</label>
                             <input type="text" id="admin-accuracy-badge" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="100% Extraction Accuracy">
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
                             <label class="block text-xs font-semibold text-gray-300 mb-1">Hero Main Title:</label>
                             <input type="text" id="admin-hero-title" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="Bowling Scoreboard Data Extraction">
                         </div>
@@ -682,7 +704,7 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-300 mb-1">Footer Copyright Text:</label>
-                            <input type="text" id="admin-footer-copyright" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="&copy; 2026 FOG Technologies Computer Vision Engineer assessment dashboard. All rights reserved.">
+                            <input type="text" id="admin-footer-copyright" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white" value="&copy; 2026 Score Vision - AI. Built for FOG Technologies Computer Vision Engineer assessment. All rights reserved.">
                         </div>
                     </div>
 

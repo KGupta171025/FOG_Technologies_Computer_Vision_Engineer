@@ -43,14 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const DEFAULT_BRANDING = {
-        brandTitle: "ScoreVision AI",
-        navSubtitle: "Real-Time Computer Vision Scoreboard Extractor",
-        heroBadge: "ScoreVision AI Pipeline",
-        heroTitle: "ScoreVision AI: Bowling Scoreboard Data Extraction",
-        heroDesc: "A production-grade Computer Vision and OCR system to automatically track, detect, and extract live scoreboard metrics from bowling video feeds with real-time HUD overlays.",
+        brandTitle: "Score Vision - AI",
+        brandClient: "For: FOG Technologies",
+        navSubtitle: "CV Engineer Assessment: Scoreboard Data Extraction",
+        heroBadge: "Interactive Video Dashboard",
+        heroTitle: "Bowling Scoreboard Data Extraction",
+        heroDesc: "A complete Computer Vision solution to automatically track and extract scoreboard data from bowling video feeds. Upload your own video or test sample clips with real-time OCR, temporal filtering, and structured scoring.",
         accuracyBadge: "100% Extraction Accuracy",
-        footerCopyright: "© 2026 ScoreVision AI • Developed by Krishna Gupta. All rights reserved.",
-        footerTagline: "Built with Python, OpenCV, Tailwind, Chart.js & Computer Vision"
+        footerCopyright: "© 2026 Score Vision - AI. All rights reserved.",
+        footerTagline: "Built for FOG Technologies Computer Vision Engineer assessment."
     };
 
     const DEFAULT_VIDEOS = {
@@ -303,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyBrandingToDOM() {
         const b = appStore.branding;
         const brandTitleEl = document.getElementById('brand-title');
+        const brandClientEl = document.getElementById('brand-client');
         const navSubtitleEl = document.getElementById('nav-subtitle');
         const heroBadgeEl = document.getElementById('hero-badge');
         const heroTitleEl = document.getElementById('hero-title');
@@ -311,7 +313,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const footerCopyrightEl = document.getElementById('footer-copyright');
         const footerTaglineEl = document.getElementById('footer-tagline');
 
-        if (brandTitleEl) brandTitleEl.textContent = b.brandTitle;
+        if (brandTitleEl) brandTitleEl.textContent = b.brandTitle || "Score Vision - AI";
+        if (brandClientEl) {
+            const clientText = (b.brandClient || "For: FOG Technologies").replace(/^For:\s*/i, '').trim();
+            brandClientEl.innerHTML = `For: <strong class="text-yellow-400 font-semibold">${clientText}</strong>`;
+        }
         if (navSubtitleEl) navSubtitleEl.textContent = b.navSubtitle;
         if (heroBadgeEl) heroBadgeEl.textContent = b.heroBadge;
         if (heroTitleEl) heroTitleEl.textContent = b.heroTitle;
@@ -1589,7 +1595,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(id);
             if (el) el.value = val;
         };
-        setVal('admin-brand-title', b.brandTitle);
+        setVal('admin-brand-title', b.brandTitle || "Score Vision - AI");
+        setVal('admin-brand-client', b.brandClient || "For: FOG Technologies");
         setVal('admin-nav-subtitle', b.navSubtitle);
         setVal('admin-hero-badge', b.heroBadge);
         setVal('admin-hero-title', b.heroTitle);
@@ -1605,13 +1612,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const el = document.getElementById(id);
                 return el ? el.value.trim() : fallback;
             };
-            appStore.branding.brandTitle = getVal('admin-brand-title', "FOG TECHNOLOGIES");
+            appStore.branding.brandTitle = getVal('admin-brand-title', "Score Vision - AI");
+            appStore.branding.brandClient = getVal('admin-brand-client', "For: FOG Technologies");
             appStore.branding.navSubtitle = getVal('admin-nav-subtitle', "CV Engineer Assessment: Scoreboard Data Extraction");
             appStore.branding.heroBadge = getVal('admin-hero-badge', "Interactive Video Dashboard");
             appStore.branding.heroTitle = getVal('admin-hero-title', "Bowling Scoreboard Data Extraction");
             appStore.branding.heroDesc = getVal('admin-hero-desc', "A complete Computer Vision solution...");
             appStore.branding.accuracyBadge = getVal('admin-accuracy-badge', "100% Extraction Accuracy");
-            appStore.branding.footerCopyright = getVal('admin-footer-copyright', "© 2026 FOG Technologies...");
+            appStore.branding.footerCopyright = getVal('admin-footer-copyright', "© 2026 Score Vision - AI. Built for FOG Technologies Computer Vision Engineer assessment. All rights reserved.");
             saveStore();
             applyBrandingToDOM();
             showAdminToast("Website branding & text changes applied live!", "success");

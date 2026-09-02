@@ -1,7 +1,7 @@
 [project]
-name = "scorevision-ai"
+name = "fog-scoreboard-extraction"
 version = "1.0.0"
-description = "ScoreVision AI: Production-grade Computer Vision and OCR system to extract bowling scoreboard data from video feeds."
+description = "Production-quality computer vision pipeline to extract bowling scoreboard data from video feeds."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
