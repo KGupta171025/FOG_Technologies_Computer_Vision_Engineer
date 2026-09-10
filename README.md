@@ -1,8 +1,19 @@
 # Score Vision - AI (For: FOG Technologies) — Bowling Scoreboard Data Extraction
 
+<div align="left">
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Cloudflare_Workers-0284c7?style=for-the-badge&logo=cloudflare)](https://scorevision-ai.hg497kg.workers.dev/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Redirect_Active-22c55e?style=for-the-badge&logo=github)](https://kgupta171025.github.io/FOG_Technologies_Computer_Vision_Engineer/)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+</div>
+
 A production-grade Computer Vision and OCR system to detect, extract, stabilize, and structure bowling scoreboard video feeds into clean JSON, CSV, and annotated video outputs.
 
-Live Demo Dashboard: **[https://kgupta171025.github.io/FOG_Technologies_Computer_Vision_Engineer/](https://kgupta171025.github.io/FOG_Technologies_Computer_Vision_Engineer/)**
+- **Primary Live App**: **[https://scorevision-ai.hg497kg.workers.dev/](https://scorevision-ai.hg497kg.workers.dev/)**
+- **GitHub Pages**: **[https://kgupta171025.github.io/FOG_Technologies_Computer_Vision_Engineer/](https://kgupta171025.github.io/FOG_Technologies_Computer_Vision_Engineer/)**
 
 ---
 
