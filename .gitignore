@@ -9,3 +9,5 @@ __pycache__/
 .venv/
 uv.lock
 
+config.bat
+node_modules
